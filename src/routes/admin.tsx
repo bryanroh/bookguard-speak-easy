@@ -142,9 +142,18 @@ function AdminPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between gap-2">
           <h1 className="font-serif text-3xl font-bold">관리</h1>
-          <Button onClick={createBook}><BookPlus className="mr-1 h-4 w-4" />새 책</Button>
+          <div className="flex gap-2">
+            <input ref={fileInputRef} type="file" accept=".html,.htm,text/html"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHtmlUpload(f); }} />
+            <Button variant="outline" disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}>
+              <Upload className="mr-1 h-4 w-4" />{uploading ? "업로드 중…" : "HTML 업로드"}
+            </Button>
+            <Button onClick={createBook}><BookPlus className="mr-1 h-4 w-4" />새 책</Button>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
