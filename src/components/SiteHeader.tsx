@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { BookOpen, LogOut, Shield, User as UserIcon } from "lucide-react";
+import { BookOpen, LogOut, Shield, Users, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,10 @@ export function SiteHeader() {
             <>
               <Link to="/library"><Button variant="ghost" size="sm">도서관</Button></Link>
               {isAdmin && (
-                <Link to="/admin"><Button variant="ghost" size="sm"><Shield className="mr-1 h-4 w-4" />관리</Button></Link>
+                <>
+                  <Link to="/admin"><Button variant="ghost" size="sm"><Shield className="mr-1 h-4 w-4" />관리</Button></Link>
+                  <Link to="/admin/users"><Button variant="ghost" size="sm"><Users className="mr-1 h-4 w-4" />회원관리</Button></Link>
+                </>
               )}
               <span className="hidden text-sm text-muted-foreground sm:flex sm:items-center sm:gap-1">
                 <UserIcon className="h-3 w-3" />{user.email}
