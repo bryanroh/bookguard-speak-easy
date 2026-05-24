@@ -86,6 +86,7 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
   };
 
   const updateActiveState = () => {
+    const block = String(document.queryCommandValue("formatBlock") || "").toLowerCase();
     setActive({
       bold: document.queryCommandState("bold"),
       italic: document.queryCommandState("italic"),
@@ -93,6 +94,11 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
       strikeThrough: document.queryCommandState("strikeThrough"),
       subscript: document.queryCommandState("subscript"),
       superscript: document.queryCommandState("superscript"),
+      formatBlockH1: block === "h1",
+      formatBlockH2: block === "h2",
+      formatBlockH3: block === "h3",
+      formatBlockP: block === "p" || block === "div",
+      formatBlockQuote: block === "blockquote",
       insertUnorderedList: document.queryCommandState("insertUnorderedList"),
       insertOrderedList: document.queryCommandState("insertOrderedList"),
       justifyLeft: document.queryCommandState("justifyLeft"),
