@@ -18,16 +18,19 @@ export function useAuth() {
         if (active) setIsAdmin(false);
         return;
       }
-      // Skip duplicate lookups for the same user (prevents flicker on auth events)
+
+      // Skip duplicate lookups after this user's role has already been checked.
       if (lastCheckedUserId.current === targetUser.id) return;
-      lastCheckedUserId.current = targetUser.id;
       const { data } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", targetUser.id)
         .eq("role", "admin")
         .maybeSingle();
-      if (active) setIsAdmin(!!data);
+      if (active) {
+        lastCheckedUserId.current = targetUser.id;
+        setIsAdmin(!!data);
+      }
     };
 
     const {
@@ -41,7 +44,10 @@ export function useAuth() {
       if (lastCheckedUserId.current !== (nextUser?.id ?? null)) {
         setIsAdmin(false);
       }
-      setTimeout(() => loadAdminRole(nextUser), 0);
+      setTimeout(async () => {
+        await loadAdminRole(nextUser);
+        if (active) setLoading(false);
+      }, 0);
     });
 
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
