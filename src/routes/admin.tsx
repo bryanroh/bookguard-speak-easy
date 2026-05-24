@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { RichEditor } from "@/components/RichEditor";
-import { parseHtmlFile } from "@/lib/html-import";
+import { parseHtmlFile, recleanStoredPage } from "@/lib/html-import";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,6 +62,26 @@ function AdminPage() {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  };
+
+  const recleanAll = async () => {
+    if (!confirm("기존에 업로드한 모든 페이지를 다시 정제합니다. 진행할까요?")) return;
+    setUploading(true);
+    try {
+      const { data: all } = await supabase.from("pages").select("id,content_html");
+      if (!all) { toast.error("페이지를 불러올 수 없습니다."); return; }
+      let n = 0;
+      for (const p of all) {
+        const cleaned = recleanStoredPage(p.content_html);
+        if (cleaned !== p.content_html) {
+          await supabase.from("pages").update({ content_html: cleaned }).eq("id", p.id);
+          n++;
+        }
+      }
+      toast.success(`정제 완료: ${n}/${all.length} 페이지 업데이트`);
+    } catch (e: any) {
+      toast.error(e?.message || "정제 실패");
+    } finally { setUploading(false); }
   };
 
 
@@ -150,8 +170,9 @@ function AdminPage() {
               onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHtmlUpload(f); }} />
             <Button variant="outline" disabled={uploading}
               onClick={() => fileInputRef.current?.click()}>
-              <Upload className="mr-1 h-4 w-4" />{uploading ? "업로드 중…" : "HTML 업로드"}
+              <Upload className="mr-1 h-4 w-4" />{uploading ? "처리 중…" : "HTML 업로드"}
             </Button>
+            <Button variant="secondary" disabled={uploading} onClick={recleanAll}>기존 책 정제</Button>
             <Button onClick={createBook}><BookPlus className="mr-1 h-4 w-4" />새 책</Button>
           </div>
         </div>
