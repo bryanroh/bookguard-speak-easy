@@ -136,18 +136,11 @@ function AdminPage() {
     const { data, error } = await supabase.from("pages").insert({ chapter_id: chapterId, page_number: max + 1, content_html: "" }).select().single();
     if (error) return toast.error(error.message);
     refresh();
-    if (data) { setEditingPage(data as PageRow); setPageHtml(""); }
+    if (data) navigate({ to: "/admin/edit/$pageId", params: { pageId: (data as PageRow).id } });
   };
   const deletePage = async (id: string) => {
     if (!confirm("페이지 삭제?")) return;
     await supabase.from("pages").delete().eq("id", id);
-    if (editingPage?.id === id) setEditingPage(null);
-    refresh();
-  };
-  const savePage = async () => {
-    if (!editingPage) return;
-    const { error } = await supabase.from("pages").update({ content_html: pageHtml }).eq("id", editingPage.id);
-    if (error) toast.error(error.message); else toast.success("저장됨");
     refresh();
   };
 
