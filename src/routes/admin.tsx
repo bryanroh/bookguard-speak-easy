@@ -157,93 +157,73 @@ function AdminPage() {
             <span>상태</span>
             <span className="text-right">수정 / 완료</span>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <input ref={fileInputRef} type="file" accept=".html,.htm,text/html" className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHtmlUpload(f); }} />
-            <Button variant="outline" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
-              <Upload className="mr-1 h-4 w-4" />{uploading ? "처리 중…" : "HTML 업로드"}
-            </Button>
-            <Button variant="secondary" disabled={uploading} onClick={recleanAll}>기존 책 정제</Button>
-            <Button onClick={createBook}><BookPlus className="mr-1 h-4 w-4" />새 책</Button>
-          </div>
-        </div>
 
-        <ul className="divide-y divide-border rounded-md border border-border bg-card">
-          {books.map((b) => {
-            const open = openId === b.id;
-            const groups = pagesByBook[b.id] ?? [];
-            const totalPages = groups.reduce((n, g) => n + g.pages.length, 0);
-            return (
-              <li key={b.id}>
-                <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30">
-                  <button onClick={() => toggle(b.id)} className="text-muted-foreground hover:text-foreground" aria-label="펼치기">
-                    {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline gap-2">
-                      <span className="truncate font-medium">{b.title}</span>
-                      {b.is_published
-                        ? <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">게시됨</span>
-                        : <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">비공개</span>}
+          <ul className="divide-y divide-border">
+            {books.map((b) => {
+              const open = openId === b.id;
+              const groups = pagesByBook[b.id] ?? [];
+              const totalPages = groups.reduce((n, g) => n + g.pages.length, 0);
+              return (
+                <li key={b.id}>
+                  <div className="grid grid-cols-[2.2fr_3fr_0.8fr_1.2fr] items-center gap-3 px-4 py-3 text-sm hover:bg-muted/30">
+                    <p className="min-w-0 truncate font-medium">{b.title}</p>
+                    <p className="min-w-0 truncate text-muted-foreground">{b.description || "설명 없음"}</p>
+                    <p className="text-xs text-muted-foreground">{b.is_published ? "게시됨" : "비공개"}</p>
+                    <div className="flex justify-end gap-1.5">
+                      <Button size="sm" variant="outline" onClick={() => toggle(b.id)}>
+                        <Pencil className="mr-1 h-3 w-3" />수정
+                      </Button>
+                      <Button size="sm" variant={b.is_published ? "secondary" : "default"} onClick={() => publishBook(b)}>
+                        {b.is_published
+                          ? <><EyeOff className="mr-1 h-3 w-3" />비공개</>
+                          : <><CheckCircle2 className="mr-1 h-3 w-3" />완료</>}
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => deleteBook(b.id)} aria-label="삭제">
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {b.description || "설명 없음"} · {b.language.toUpperCase()} · {new Date(b.created_at).toLocaleDateString()}
-                    </p>
                   </div>
-                  <div className="flex shrink-0 gap-1.5">
-                    <Button size="sm" variant="outline" onClick={() => toggle(b.id)}>
-                      <Pencil className="mr-1 h-3 w-3" />수정
-                    </Button>
-                    <Button size="sm" variant={b.is_published ? "secondary" : "default"} onClick={() => publishBook(b)}>
-                      {b.is_published
-                        ? <><EyeOff className="mr-1 h-3 w-3" />비공개</>
-                        : <><CheckCircle2 className="mr-1 h-3 w-3" />완료</>}
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => deleteBook(b.id)}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
 
-                {open && (
-                  <div className="border-t border-border bg-muted/10 px-4 py-3">
-                    {groups.length === 0 ? (
-                      <p className="text-xs text-muted-foreground">불러오는 중… 또는 챕터 없음.</p>
-                    ) : (
-                      <div className="space-y-3">
-                        {groups.map((g) => (
-                          <div key={g.chapter.id}>
-                            <div className="mb-1 flex items-center justify-between">
-                              <p className="text-xs font-semibold text-muted-foreground">{g.chapter.title} · {g.pages.length}페이지</p>
-                              <Button size="sm" variant="ghost" onClick={() => addPage(b.id, g.chapter.id)}>
-                                <FilePlus className="mr-1 h-3 w-3" />페이지 추가
-                              </Button>
+                  {open && (
+                    <div className="border-t border-border bg-muted/20 px-4 py-3">
+                      {groups.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">불러오는 중… 또는 챕터 없음.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {groups.map((g) => (
+                            <div key={g.chapter.id}>
+                              <div className="mb-1 flex items-center justify-between">
+                                <p className="text-xs font-semibold text-muted-foreground">{g.chapter.title} · {g.pages.length}페이지</p>
+                                <Button size="sm" variant="ghost" onClick={() => addPage(b.id, g.chapter.id)}>
+                                  <FilePlus className="mr-1 h-3 w-3" />페이지 추가
+                                </Button>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {g.pages.map((p) => (
+                                  <Link key={p.id} to="/admin/edit/$pageId" params={{ pageId: p.id }}
+                                    className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs hover:border-primary hover:text-primary">
+                                    <Pencil className="h-3 w-3" />p.{p.page_number}
+                                  </Link>
+                                ))}
+                                {g.pages.length === 0 && <p className="text-xs text-muted-foreground">페이지 없음.</p>}
+                              </div>
                             </div>
-                            <div className="flex flex-wrap gap-1.5">
-                              {g.pages.map((p) => (
-                                <Link key={p.id} to="/admin/edit/$pageId" params={{ pageId: p.id }}
-                                  className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2.5 py-1 text-xs hover:border-primary hover:text-primary">
-                                  <Pencil className="h-3 w-3" />p.{p.page_number}
-                                </Link>
-                              ))}
-                              {g.pages.length === 0 && <p className="text-xs text-muted-foreground">페이지 없음.</p>}
-                            </div>
-                          </div>
-                        ))}
-                        {totalPages > 0 && (
-                          <p className="pt-1 text-[11px] text-muted-foreground">페이지를 클릭하면 원본 본문(글자·자간·띄어쓰기)을 바로 수정할 수 있습니다.</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </li>
-            );
-          })}
-          {books.length === 0 && (
-            <li className="px-4 py-12 text-center text-sm text-muted-foreground">아직 책이 없습니다. HTML 업로드 또는 새 책으로 시작하세요.</li>
-          )}
-        </ul>
+                          ))}
+                          {totalPages > 0 && (
+                            <p className="pt-1 text-[11px] text-muted-foreground">페이지를 클릭하면 원본 본문(글자·자간·띄어쓰기)을 바로 수정할 수 있습니다.</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+            {books.length === 0 && (
+              <li className="px-4 py-12 text-center text-sm text-muted-foreground">아직 책이 없습니다. HTML 업로드 또는 새 책으로 시작하세요.</li>
+            )}
+          </ul>
+        </section>
       </main>
     </div>
   );
