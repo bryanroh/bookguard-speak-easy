@@ -15,6 +15,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReadPageIdRouteImport } from './routes/read.$pageId'
 import { Route as BookBookIdRouteImport } from './routes/book.$bookId'
+import { Route as AdminEditPageIdRouteImport } from './routes/admin.edit.$pageId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -46,31 +47,39 @@ const BookBookIdRoute = BookBookIdRouteImport.update({
   path: '/book/$bookId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEditPageIdRoute = AdminEditPageIdRouteImport.update({
+  id: '/edit/$pageId',
+  path: '/edit/$pageId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/read/$pageId': typeof ReadPageIdRoute
+  '/admin/edit/$pageId': typeof AdminEditPageIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/read/$pageId': typeof ReadPageIdRoute
+  '/admin/edit/$pageId': typeof AdminEditPageIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/read/$pageId': typeof ReadPageIdRoute
+  '/admin/edit/$pageId': typeof AdminEditPageIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,8 +90,16 @@ export interface FileRouteTypes {
     | '/login'
     | '/book/$bookId'
     | '/read/$pageId'
+    | '/admin/edit/$pageId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/library' | '/login' | '/book/$bookId' | '/read/$pageId'
+  to:
+    | '/'
+    | '/admin'
+    | '/library'
+    | '/login'
+    | '/book/$bookId'
+    | '/read/$pageId'
+    | '/admin/edit/$pageId'
   id:
     | '__root__'
     | '/'
@@ -91,11 +108,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/book/$bookId'
     | '/read/$pageId'
+    | '/admin/edit/$pageId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
   BookBookIdRoute: typeof BookBookIdRoute
@@ -146,12 +164,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookBookIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/edit/$pageId': {
+      id: '/admin/edit/$pageId'
+      path: '/edit/$pageId'
+      fullPath: '/admin/edit/$pageId'
+      preLoaderRoute: typeof AdminEditPageIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminEditPageIdRoute: typeof AdminEditPageIdRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminEditPageIdRoute: AdminEditPageIdRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
   BookBookIdRoute: BookBookIdRoute,
@@ -160,3 +195,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
