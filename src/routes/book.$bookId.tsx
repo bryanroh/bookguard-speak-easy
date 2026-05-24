@@ -17,7 +17,7 @@ type PageRow = { id: string; chapter_id: string; page_number: number };
 
 function BookPage() {
   const { bookId } = Route.useParams();
-  const { user, loading } = useAuth();
+  const { user, isMember, loading } = useAuth();
   const navigate = useNavigate();
   const [book, setBook] = useState<Book | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -79,14 +79,20 @@ function BookPage() {
                 <div className="italic">— 섭리 신학 e-BOOK —</div>
               </div>
 
-              {resumeId && (
-                <div className="mt-10 flex justify-center">
-                  <Link to="/read/$pageId" params={{ pageId: resumeId }}>
-                    <Button size="lg" className="shadow-lg">
-                      {lastPageId ? "이어서 읽기" : "읽기 시작"}
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </Link>
+              {isMember ? (
+                resumeId && (
+                  <div className="mt-10 flex justify-center">
+                    <Link to="/read/$pageId" params={{ pageId: resumeId }}>
+                      <Button size="lg" className="shadow-lg">
+                        {lastPageId ? "이어서 읽기" : "읽기 시작"}
+                        <ChevronRight className="ml-1 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                )
+              ) : (
+                <div className="mt-10 rounded-md border border-amber-300/60 bg-amber-50/70 p-4 text-center text-sm text-amber-900">
+                  본문 읽기는 <strong>정회원</strong> 전용입니다. 관리자에게 정회원 승격을 요청해 주세요.
                 </div>
               )}
             </div>
@@ -95,28 +101,33 @@ function BookPage() {
             <div className="book-page book-page--right">
               <div className="book-ornament">목 차</div>
               <div className="book-rule" />
-              {chapters.length === 0 && (
+              {!isMember ? (
+                <p className="mt-8 text-center italic" style={{ color: "#6b4118", fontFamily: "var(--font-serif)" }}>
+                  목차와 본문은 정회원만 열람할 수 있습니다.
+                </p>
+              ) : chapters.length === 0 ? (
                 <p className="mt-8 text-center italic" style={{ color: "#6b4118", fontFamily: "var(--font-serif)" }}>
                   아직 챕터가 없습니다.
                 </p>
+              ) : (
+                <div className="mt-4 space-y-1">
+                  {chapters.map((c, i) => {
+                    const firstPg = pagesByChapter[c.id]?.[0];
+                    return (
+                      <Link
+                        key={c.id}
+                        to={firstPg ? "/read/$pageId" : "/book/$bookId"}
+                        params={firstPg ? { pageId: firstPg.id } : { bookId }}
+                        className="book-toc-item"
+                      >
+                        <span>제 {i + 1} 장 &nbsp; {c.title}</span>
+                        <span className="leader" />
+                        <span className="book-toc-page">{firstPg?.page_number ?? "—"}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
               )}
-              <div className="mt-4 space-y-1">
-                {chapters.map((c, i) => {
-                  const firstPg = pagesByChapter[c.id]?.[0];
-                  return (
-                    <Link
-                      key={c.id}
-                      to={firstPg ? "/read/$pageId" : "/book/$bookId"}
-                      params={firstPg ? { pageId: firstPg.id } : { bookId }}
-                      className="book-toc-item"
-                    >
-                      <span>제 {i + 1} 장 &nbsp; {c.title}</span>
-                      <span className="leader" />
-                      <span className="book-toc-page">{firstPg?.page_number ?? "—"}</span>
-                    </Link>
-                  );
-                })}
-              </div>
             </div>
           </div>
         </div>
