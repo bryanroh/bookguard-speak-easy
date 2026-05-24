@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Plus, Trash2, BookPlus, FilePlus, Save, ChevronDown, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Plus, Trash2, BookPlus, FilePlus, Save, ChevronDown, ChevronRight, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { RichEditor } from "@/components/RichEditor";
+import { parseHtmlFile } from "@/lib/html-import";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +33,37 @@ function AdminPage() {
   const [openChapter, setOpenChapter] = useState<string | null>(null);
   const [editingPage, setEditingPage] = useState<PageRow | null>(null);
   const [pageHtml, setPageHtml] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleHtmlUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const text = await file.text();
+      const parsed = parseHtmlFile(text);
+      if (parsed.pages.length === 0) { toast.error("페이지를 추출할 수 없습니다."); return; }
+      const { data: book, error: be } = await supabase.from("books")
+        .insert({ title: parsed.title, created_by: user!.id, language: "ko" })
+        .select().single();
+      if (be || !book) { toast.error(be?.message || "책 생성 실패"); return; }
+      const { data: chapter, error: ce } = await supabase.from("chapters")
+        .insert({ book_id: book.id, title: parsed.title, order_index: 0 })
+        .select().single();
+      if (ce || !chapter) { toast.error(ce?.message || "챕터 생성 실패"); return; }
+      const rows = parsed.pages.map((html, i) => ({ chapter_id: chapter.id, page_number: i + 1, content_html: html }));
+      const { error: pe } = await supabase.from("pages").insert(rows);
+      if (pe) { toast.error(pe.message); return; }
+      toast.success(`업로드 완료: ${parsed.pages.length}페이지 (서식 유지)`);
+      setSelectedBookId(book.id);
+      refresh();
+    } catch (e: any) {
+      toast.error(e?.message || "업로드 실패");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
 
   useEffect(() => {
     if (!loading) {
@@ -110,9 +142,18 @@ function AdminPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between gap-2">
           <h1 className="font-serif text-3xl font-bold">관리</h1>
-          <Button onClick={createBook}><BookPlus className="mr-1 h-4 w-4" />새 책</Button>
+          <div className="flex gap-2">
+            <input ref={fileInputRef} type="file" accept=".html,.htm,text/html"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHtmlUpload(f); }} />
+            <Button variant="outline" disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}>
+              <Upload className="mr-1 h-4 w-4" />{uploading ? "업로드 중…" : "HTML 업로드"}
+            </Button>
+            <Button onClick={createBook}><BookPlus className="mr-1 h-4 w-4" />새 책</Button>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
