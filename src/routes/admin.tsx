@@ -35,6 +35,7 @@ function AdminPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [uploading, setUploading] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [pagesByBook, setPagesByBook] = useState<
     Record<string, { chapter: Chapter; pages: PageRow[] }[]>
   >({});
@@ -272,8 +273,14 @@ function AdminPage() {
               const totalPages = groups.reduce((n, g) => n + g.pages.length, 0);
               return (
                 <li key={b.id}>
-                  <div className="grid grid-cols-[2.2fr_3fr_0.8fr_1.2fr] items-center gap-3 px-4 py-3 text-sm hover:bg-muted/30">
-                    <p className="min-w-0 truncate font-medium">{b.title}</p>
+                  <div
+                    className={`grid grid-cols-[2.2fr_3fr_0.8fr_1.2fr] items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                      open ? "bg-primary/10 ring-1 ring-inset ring-primary/40" : "hover:bg-muted/30"
+                    }`}
+                  >
+                    <p className={`min-w-0 truncate font-medium ${open ? "text-primary" : ""}`}>
+                      {b.title}
+                    </p>
                     <p className="min-w-0 truncate text-muted-foreground">
                       {b.description || "설명 없음"}
                     </p>
@@ -281,9 +288,9 @@ function AdminPage() {
                       {b.is_published ? "게시됨" : "비공개"}
                     </p>
                     <div className="flex justify-end gap-1.5">
-                      <Button size="sm" variant="outline" onClick={() => toggle(b.id)}>
+                      <Button size="sm" variant={open ? "default" : "outline"} onClick={() => toggle(b.id)}>
                         <Pencil className="mr-1 h-3 w-3" />
-                        수정
+                        {open ? "선택됨" : "수정"}
                       </Button>
                       <Button
                         size="sm"
