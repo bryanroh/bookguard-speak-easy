@@ -28,8 +28,8 @@ export function useAuth() {
         return;
       }
 
-      // Skip duplicate lookups only after the same user was already confirmed as admin.
-      if (lastCheckedUserId.current === targetUser.id && isAdmin) return;
+      // Skip duplicate lookups after this user's role has already been checked.
+      if (lastCheckedUserId.current === targetUser.id) return;
       const { data } = await supabase
         .from("user_roles")
         .select("role")
