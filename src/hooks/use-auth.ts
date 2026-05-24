@@ -6,30 +6,34 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isMember, setIsMember] = useState(false);
   const [loading, setLoading] = useState(true);
   const lastCheckedUserId = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
 
-    const loadAdminRole = async (targetUser: User | null) => {
+    const loadRoles = async (targetUser: User | null) => {
       if (!targetUser) {
         lastCheckedUserId.current = null;
-        if (active) setIsAdmin(false);
+        if (active) {
+          setIsAdmin(false);
+          setIsMember(false);
+        }
         return;
       }
-
-      // Skip duplicate lookups after this user's role has already been checked.
       if (lastCheckedUserId.current === targetUser.id) return;
       const { data } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", targetUser.id)
-        .eq("role", "admin")
-        .maybeSingle();
+        .eq("user_id", targetUser.id);
       if (active) {
         lastCheckedUserId.current = targetUser.id;
-        setIsAdmin(!!data);
+        const roles = (data ?? []).map((r: { role: string }) => r.role);
+        const admin = roles.includes("admin");
+        setIsAdmin(admin);
+        // 정회원: admin도 포함, 또는 명시적 'member' 역할
+        setIsMember(admin || roles.includes("member"));
       }
     };
 
@@ -40,12 +44,12 @@ export function useAuth() {
       const nextUser = s?.user ?? null;
       setSession(s);
       setUser(nextUser);
-      // Only reset admin flag when user identity changes (sign-in/out/switch)
       if (lastCheckedUserId.current !== (nextUser?.id ?? null)) {
         setIsAdmin(false);
+        setIsMember(false);
       }
       setTimeout(async () => {
-        await loadAdminRole(nextUser);
+        await loadRoles(nextUser);
         if (active) setLoading(false);
       }, 0);
     });
@@ -55,7 +59,7 @@ export function useAuth() {
       const nextUser = s?.user ?? null;
       setSession(s);
       setUser(nextUser);
-      await loadAdminRole(nextUser);
+      await loadRoles(nextUser);
       if (active) setLoading(false);
     });
 
@@ -65,5 +69,5 @@ export function useAuth() {
     };
   }, []);
 
-  return { session, user, isAdmin, loading };
+  return { session, user, isAdmin, isMember, loading };
 }
