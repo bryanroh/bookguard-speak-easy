@@ -83,6 +83,10 @@ function LoginPage() {
             <div className="h-px flex-1 bg-border" /><span>또는</span><div className="h-px flex-1 bg-border" />
           </div>
           <Button variant="outline" className="w-full" onClick={google}>Google로 계속</Button>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            계정이 없으신가요?{" "}
+            <Link to="/signup" className="font-medium text-primary hover:underline">회원가입</Link>
+          </p>
         </div>
       </div>
     </div>
