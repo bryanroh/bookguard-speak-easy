@@ -344,17 +344,25 @@ function AdminPage() {
                                 </Button>
                               </div>
                               <div className="flex flex-wrap gap-1.5">
-                                {g.pages.map((p) => (
-                                  <Link
-                                    key={p.id}
-                                    to="/admin/edit/$pageId"
-                                    params={{ pageId: p.id }}
-                                    className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs hover:border-primary hover:text-primary"
-                                  >
-                                    <Pencil className="h-3 w-3" />
-                                    p.{p.page_number}
-                                  </Link>
-                                ))}
+                                {g.pages.map((p) => {
+                                  const selected = selectedPageId === p.id;
+                                  return (
+                                    <Link
+                                      key={p.id}
+                                      to="/admin/edit/$pageId"
+                                      params={{ pageId: p.id }}
+                                      onClick={() => setSelectedPageId(p.id)}
+                                      className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+                                        selected
+                                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                                          : "border-border bg-background hover:border-primary hover:bg-primary/10 hover:text-primary"
+                                      }`}
+                                    >
+                                      <Pencil className="h-3 w-3" />
+                                      p.{p.page_number}
+                                    </Link>
+                                  );
+                                })}
                                 {g.pages.length === 0 && (
                                   <p className="text-xs text-muted-foreground">페이지 없음.</p>
                                 )}
