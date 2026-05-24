@@ -16,9 +16,9 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 font-serif text-lg font-semibold">
+        <Link to="/" className="flex items-center gap-2 font-serif text-lg font-semibold tracking-wide">
           <BookOpen className="h-5 w-5 text-primary" />
-          섭리 웹북
+          섭리 신학 <span className="text-primary">e-BOOK</span>
         </Link>
         <nav className="flex items-center gap-2">
           {user ? (
