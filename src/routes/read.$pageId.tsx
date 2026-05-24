@@ -91,7 +91,8 @@ function ReaderPage() {
   return (
     <div className="relative min-h-screen bg-background">
       <Watermark userLabel={userLabel} />
-      <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
+      <SiteHeader />
+      <header className="sticky top-16 z-20 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between gap-3 px-4">
           <Link to="/book/$bookId" params={{ bookId: page.chapter.book.id }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">
             <ArrowLeft className="h-4 w-4" />{page.chapter.book.title}
