@@ -24,6 +24,7 @@ export function useReaderProtection({ userId, bookId, pageId, enabled = true }: 
 
   useEffect(() => {
     if (!enabled) return;
+    document.body.classList.remove("reader-blur");
 
     const log = (event_type: string) => {
       supabase.from("capture_logs").insert({
@@ -58,17 +59,6 @@ export function useReaderProtection({ userId, bookId, pageId, enabled = true }: 
       if (ctrl && e.shiftKey && ["i", "j", "c"].includes(k)) { e.preventDefault(); log("devtools_combo"); return; }
     };
 
-    const onVisibility = () => { if (document.hidden) document.body.classList.add("reader-blur"); else document.body.classList.remove("reader-blur"); };
-
-    // Devtools heuristic
-    let devtoolsOpen = false;
-    const devtoolsTick = setInterval(() => {
-      const threshold = 160;
-      const open = window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold;
-      if (open && !devtoolsOpen) { devtoolsOpen = true; document.body.classList.add("reader-blur"); log("devtools_open"); }
-      if (!open && devtoolsOpen) { devtoolsOpen = false; document.body.classList.remove("reader-blur"); }
-    }, 1000);
-
     // Print event
     const onBeforePrint = (e: Event) => { e.preventDefault?.(); blurContent("print"); };
 
@@ -84,7 +74,6 @@ export function useReaderProtection({ userId, bookId, pageId, enabled = true }: 
     document.addEventListener("selectstart", onSelect);
     document.addEventListener("dragstart", onDrag);
     document.addEventListener("keydown", onKey);
-    document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("beforeprint", onBeforePrint);
 
     return () => {
@@ -94,9 +83,7 @@ export function useReaderProtection({ userId, bookId, pageId, enabled = true }: 
       document.removeEventListener("selectstart", onSelect);
       document.removeEventListener("dragstart", onDrag);
       document.removeEventListener("keydown", onKey);
-      document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("beforeprint", onBeforePrint);
-      clearInterval(devtoolsTick);
       blurRef.current?.remove();
       document.body.classList.remove("reader-blur");
     };
