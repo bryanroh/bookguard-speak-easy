@@ -59,8 +59,6 @@ export function useReaderProtection({ userId, bookId, pageId, enabled = true }: 
       if (ctrl && e.shiftKey && ["i", "j", "c"].includes(k)) { e.preventDefault(); log("devtools_combo"); return; }
     };
 
-    const onVisibility = () => { if (document.hidden) document.body.classList.add("reader-blur"); else document.body.classList.remove("reader-blur"); };
-
     // Print event
     const onBeforePrint = (e: Event) => { e.preventDefault?.(); blurContent("print"); };
 
@@ -76,7 +74,6 @@ export function useReaderProtection({ userId, bookId, pageId, enabled = true }: 
     document.addEventListener("selectstart", onSelect);
     document.addEventListener("dragstart", onDrag);
     document.addEventListener("keydown", onKey);
-    document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("beforeprint", onBeforePrint);
 
     return () => {
@@ -86,7 +83,6 @@ export function useReaderProtection({ userId, bookId, pageId, enabled = true }: 
       document.removeEventListener("selectstart", onSelect);
       document.removeEventListener("dragstart", onDrag);
       document.removeEventListener("keydown", onKey);
-      document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("beforeprint", onBeforePrint);
       blurRef.current?.remove();
       document.body.classList.remove("reader-blur");
