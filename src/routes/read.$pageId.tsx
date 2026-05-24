@@ -107,7 +107,7 @@ function ReaderPage() {
 
       <main className="mx-auto max-w-3xl px-6 py-10">
         <article
-          className="reader-content prose-book no-select"
+          className="reader-content imported-html prose-book no-select"
           // Protected content
           dangerouslySetInnerHTML={{ __html: highlightedHtml }}
         />
