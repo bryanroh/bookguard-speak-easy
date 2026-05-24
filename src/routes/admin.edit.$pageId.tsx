@@ -39,6 +39,7 @@ function EditPage() {
   const [text, setText] = useState("");
   const [mode, setMode] = useState<"rich" | "text" | "preview">("rich");
   const [saving, setSaving] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(true);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) navigate({ to: "/login" });
@@ -46,8 +47,15 @@ function EditPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: p } = await supabase.from("pages").select("*").eq("id", pageId).single();
-      if (!p) return;
+      setLoadingPage(true);
+      setPage(null);
+      setCtx(null);
+      const { data: p, error } = await supabase.from("pages").select("*").eq("id", pageId).single();
+      if (error || !p) {
+        toast.error(error?.message || "페이지를 열 수 없습니다.");
+        setLoadingPage(false);
+        return;
+      }
       setPage(p as PageRow);
       setHtml(p.content_html);
       const { data: c } = await supabase.from("chapters").select("id,title,book_id").eq("id", p.chapter_id).single();
@@ -55,6 +63,7 @@ function EditPage() {
         const { data: b } = await supabase.from("books").select("title").eq("id", c.book_id).single();
         setCtx({ id: c.id, title: c.title, book_id: c.book_id, book_title: b?.title ?? "" });
       }
+      setLoadingPage(false);
     })();
   }, [pageId]);
 
@@ -93,7 +102,7 @@ function EditPage() {
   };
 
   if (loading || !isAdmin) return <div className="min-h-screen bg-background"><SiteHeader /><p className="p-8 text-center">권한 확인 중…</p></div>;
-  if (!page) return <div className="min-h-screen bg-background"><SiteHeader /><p className="p-8 text-center">불러오는 중…</p></div>;
+  if (loadingPage || !page) return <div className="min-h-screen bg-background"><SiteHeader /><p className="p-8 text-center">선택한 페이지를 여는 중…</p></div>;
 
   return (
     <div className="min-h-screen bg-background">
