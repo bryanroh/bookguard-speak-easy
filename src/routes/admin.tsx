@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { BookPlus, Upload, Pencil, CheckCircle2, EyeOff, Trash2, ChevronDown, ChevronRight, FilePlus } from "lucide-react";
+import { BookPlus, Upload, Pencil, CheckCircle2, EyeOff, Trash2, FilePlus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -129,13 +129,33 @@ function AdminPage() {
   if (loading || !isAdmin) return <div className="min-h-screen bg-background"><SiteHeader /><p className="p-8 text-center">권한 확인 중…</p></div>;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-muted/30">
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        <div className="mb-5 border-b border-border pb-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">관리자 전용</p>
           <div>
-            <h1 className="font-serif text-3xl font-bold">관리</h1>
-            <p className="mt-1 text-sm text-muted-foreground">한 줄씩 책을 확인하고 [수정]으로 본문을 직접 고치세요. [완료]를 누르면 도서관에 게시됩니다.</p>
+            <h1 className="font-sans text-3xl font-bold">관리</h1>
+            <p className="mt-1 text-sm text-muted-foreground">도서관의 책 카드 화면과 다르게, 관리 화면은 전체 책을 한 줄 표로 확인하고 수정합니다.</p>
+          </div>
+        </div>
+
+        <div className="mb-4 flex flex-wrap justify-end gap-2">
+          <input ref={fileInputRef} type="file" accept=".html,.htm,text/html" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHtmlUpload(f); }} />
+          <Button variant="outline" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+            <Upload className="mr-1 h-4 w-4" />{uploading ? "처리 중…" : "HTML 업로드"}
+          </Button>
+          <Button variant="secondary" disabled={uploading} onClick={recleanAll}>기존 책 정제</Button>
+          <Button onClick={createBook}><BookPlus className="mr-1 h-4 w-4" />새 책</Button>
+        </div>
+
+        <section className="overflow-hidden rounded-md border border-border bg-background">
+          <div className="grid grid-cols-[2.2fr_3fr_0.8fr_1.2fr] items-center border-b border-border bg-muted px-4 py-2 text-xs font-semibold text-muted-foreground">
+            <span>책 제목 전체</span>
+            <span>설명 내용</span>
+            <span>상태</span>
+            <span className="text-right">수정 / 완료</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <input ref={fileInputRef} type="file" accept=".html,.htm,text/html" className="hidden"
