@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/book/$bookId")({
-  head: () => ({ meta: [{ title: "책 — 섭리 웹북" }] }),
+  head: () => ({ meta: [{ title: "책 — 섭리 신학 e-BOOK" }] }),
   component: BookPage,
 });
 
@@ -24,9 +24,7 @@ function BookPage() {
   const [pagesByChapter, setPagesByChapter] = useState<Record<string, PageRow[]>>({});
   const [lastPageId, setLastPageId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-  }, [user, loading, navigate]);
+  useEffect(() => { if (!loading && !user) navigate({ to: "/login" }); }, [user, loading, navigate]);
 
   useEffect(() => {
     if (!user) return;
@@ -50,39 +48,77 @@ function BookPage() {
 
   const firstPageId = chapters.length > 0 ? pagesByChapter[chapters[0].id]?.[0]?.id : null;
   const resumeId = lastPageId || firstPageId;
+  const totalPages = Object.values(pagesByChapter).reduce((a, p) => a + p.length, 0);
 
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-4 py-10">
-        <Link to="/library" className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-primary"><ArrowLeft className="mr-1 h-4 w-4" />도서관</Link>
-        <h1 className="font-serif text-3xl font-bold">{book.title}</h1>
-        {book.description && <p className="mt-2 text-muted-foreground">{book.description}</p>}
+      <main className="mx-auto max-w-6xl px-4 py-10">
+        <Link to="/library" className="mb-6 inline-flex items-center text-sm text-muted-foreground hover:text-primary">
+          <ArrowLeft className="mr-1 h-4 w-4" />도서관
+        </Link>
 
-        {resumeId && (
-          <div className="mt-6">
-            <Link to="/read/$pageId" params={{ pageId: resumeId }}>
-              <Button size="lg">{lastPageId ? "이어서 읽기" : "읽기 시작"}<ChevronRight className="ml-1 h-4 w-4" /></Button>
-            </Link>
-          </div>
-        )}
+        <div className="book-stage">
+          <div className="book-spread">
+            {/* Cover that fades to reveal the spread */}
+            <div className="book-cover-overlay">
+              <div className="crest">✦ ✦ ✦</div>
+            </div>
 
-        <div className="mt-10 space-y-4">
-          <h2 className="font-serif text-xl font-semibold">목차</h2>
-          {chapters.length === 0 && <p className="text-muted-foreground">아직 챕터가 없습니다.</p>}
-          {chapters.map((c, i) => (
-            <div key={c.id} className="rounded-md border border-border bg-card p-4">
-              <h3 className="font-serif font-semibold">{i + 1}장. {c.title}</h3>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {(pagesByChapter[c.id] ?? []).map((p) => (
-                  <Link key={p.id} to="/read/$pageId" params={{ pageId: p.id }}
-                    className="rounded-md bg-secondary px-3 py-1 text-sm hover:bg-primary hover:text-primary-foreground">
-                    p.{p.page_number}
+            {/* Left page — title page */}
+            <div className="book-page book-page--left">
+              <div className="book-ornament">❦</div>
+              <div className="book-rule" />
+              <h1 className="book-title-display">{book.title}</h1>
+              {book.description && <p className="book-subtitle-display">{book.description}</p>}
+              <div className="book-rule mt-8" />
+              <div className="book-ornament">✦</div>
+
+              <div className="mt-10 space-y-3 text-center text-sm" style={{ color: "#6b4118", fontFamily: "var(--font-serif)" }}>
+                <div>전체 {chapters.length}장 · {totalPages} 페이지</div>
+                <div className="italic">— 섭리 신학 e-BOOK —</div>
+              </div>
+
+              {resumeId && (
+                <div className="mt-10 flex justify-center">
+                  <Link to="/read/$pageId" params={{ pageId: resumeId }}>
+                    <Button size="lg" className="shadow-lg">
+                      {lastPageId ? "이어서 읽기" : "읽기 시작"}
+                      <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
                   </Link>
-                ))}
+                </div>
+              )}
+            </div>
+
+            {/* Right page — table of contents */}
+            <div className="book-page book-page--right">
+              <div className="book-ornament">목 차</div>
+              <div className="book-rule" />
+              {chapters.length === 0 && (
+                <p className="mt-8 text-center italic" style={{ color: "#6b4118", fontFamily: "var(--font-serif)" }}>
+                  아직 챕터가 없습니다.
+                </p>
+              )}
+              <div className="mt-4 space-y-1">
+                {chapters.map((c, i) => {
+                  const firstPg = pagesByChapter[c.id]?.[0];
+                  return (
+                    <Link
+                      key={c.id}
+                      to={firstPg ? "/read/$pageId" : "/book/$bookId"}
+                      params={firstPg ? { pageId: firstPg.id } : { bookId }}
+                      className="book-toc-item"
+                    >
+                      <span>제 {i + 1} 장 &nbsp; {c.title}</span>
+                      <span className="leader" />
+                      <span className="book-toc-page">{firstPg?.page_number ?? "—"}</span>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </main>
     </div>
