@@ -129,6 +129,17 @@
     transition: background 0.2s;
   }
 
+  /* Safety net for imported HTML — guarantees text is visible inside the reader. */
+  .imported-html { color: var(--color-ink); background: transparent; }
+  .imported-html * { max-width: 100%; visibility: visible !important; }
+  .imported-html [style*="color:#fff"],
+  .imported-html [style*="color: #fff"],
+  .imported-html [style*="color:white"],
+  .imported-html [style*="color: white"],
+  .imported-html [style*="color:transparent"] { color: var(--color-ink) !important; }
+  .imported-html img, .imported-html svg { height: auto; }
+
+
   /* ===== Classic Bible-style open book ===== */
   .book-stage { perspective: 2400px; }
   .book-spread {
