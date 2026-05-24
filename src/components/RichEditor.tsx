@@ -69,7 +69,8 @@ const LINE_HEIGHTS = [
 ];
 
 const btnBase = "h-8 w-8 p-0 transition-colors";
-const activeBtn = "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground";
+const activeBtn =
+  "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground";
 
 export function RichEditor({ value, onChange, placeholder }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -185,7 +186,9 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
           className="h-8 rounded border border-border bg-background px-2 text-xs"
         >
           {FONT_SIZES.map((s) => (
-            <option key={s.label} value={s.v}>{s.label}</option>
+            <option key={s.label} value={s.v}>
+              {s.label}
+            </option>
           ))}
         </select>
         <select
@@ -194,7 +197,9 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
           className="h-8 rounded border border-border bg-background px-2 text-xs"
         >
           {LETTER_SPACING.map((s) => (
-            <option key={s.label} value={s.v}>{s.label}</option>
+            <option key={s.label} value={s.v}>
+              {s.label}
+            </option>
           ))}
         </select>
         <select
@@ -203,18 +208,36 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
           className="h-8 rounded border border-border bg-background px-2 text-xs"
         >
           {LINE_HEIGHTS.map((s) => (
-            <option key={s.label} value={s.v}>{s.label}</option>
+            <option key={s.label} value={s.v}>
+              {s.label}
+            </option>
           ))}
         </select>
         <span className="mx-1 h-5 w-px bg-border" />
 
-        <label className="relative inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded border border-border bg-background text-xs font-bold" title="글자 색">
+        <label
+          className="relative inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded border border-border bg-background text-xs font-bold"
+          title="글자 색"
+        >
           A
-          <input type="color" defaultValue="#000000" onChange={(e) => exec("foreColor", e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
+          <input
+            type="color"
+            defaultValue="#000000"
+            onChange={(e) => exec("foreColor", e.target.value)}
+            className="absolute inset-0 cursor-pointer opacity-0"
+          />
         </label>
-        <label className="relative inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded border border-border bg-accent text-xs font-bold text-accent-foreground" title="형광펜">
+        <label
+          className="relative inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded border border-border bg-accent text-xs font-bold text-accent-foreground"
+          title="형광펜"
+        >
           H
-          <input type="color" defaultValue="#fff176" onChange={(e) => exec("hiliteColor", e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
+          <input
+            type="color"
+            defaultValue="#fff176"
+            onChange={(e) => exec("hiliteColor", e.target.value)}
+            className="absolute inset-0 cursor-pointer opacity-0"
+          />
         </label>
         <span className="mx-1 h-5 w-px bg-border" />
 
@@ -226,11 +249,41 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
         {toolbarButton("superscript", <Superscript className="h-4 w-4" />, "위첨자")}
         <span className="mx-1 h-5 w-px bg-border" />
 
-        {toolbarButton("formatBlock", <Heading1 className="h-4 w-4" />, "제목 1", "<h1>", "formatBlockH1")}
-        {toolbarButton("formatBlock", <Heading2 className="h-4 w-4" />, "제목 2", "<h2>", "formatBlockH2")}
-        {toolbarButton("formatBlock", <Heading3 className="h-4 w-4" />, "제목 3", "<h3>", "formatBlockH3")}
-        {toolbarButton("formatBlock", <Pilcrow className="h-4 w-4" />, "본문", "<p>", "formatBlockP")}
-        {toolbarButton("formatBlock", <Quote className="h-4 w-4" />, "인용", "<blockquote>", "formatBlockQuote")}
+        {toolbarButton(
+          "formatBlock",
+          <Heading1 className="h-4 w-4" />,
+          "제목 1",
+          "<h1>",
+          "formatBlockH1",
+        )}
+        {toolbarButton(
+          "formatBlock",
+          <Heading2 className="h-4 w-4" />,
+          "제목 2",
+          "<h2>",
+          "formatBlockH2",
+        )}
+        {toolbarButton(
+          "formatBlock",
+          <Heading3 className="h-4 w-4" />,
+          "제목 3",
+          "<h3>",
+          "formatBlockH3",
+        )}
+        {toolbarButton(
+          "formatBlock",
+          <Pilcrow className="h-4 w-4" />,
+          "본문",
+          "<p>",
+          "formatBlockP",
+        )}
+        {toolbarButton(
+          "formatBlock",
+          <Quote className="h-4 w-4" />,
+          "인용",
+          "<blockquote>",
+          "formatBlockQuote",
+        )}
         <span className="mx-1 h-5 w-px bg-border" />
 
         {toolbarButton("insertUnorderedList", <List className="h-4 w-4" />, "글머리 기호")}
@@ -245,13 +298,58 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
         {toolbarButton("justifyFull", <AlignJustify className="h-4 w-4" />, "양쪽 정렬")}
         <span className="mx-1 h-5 w-px bg-border" />
 
-        <Button type="button" size="sm" variant="ghost" title="링크" className={btnBase} onClick={promptLink}><Link2 className="h-4 w-4" /></Button>
-        <Button type="button" size="sm" variant="ghost" title="링크 해제" className={btnBase} onClick={() => exec("unlink")}><Unlink className="h-4 w-4" /></Button>
-        <Button type="button" size="sm" variant="ghost" title="서식 지우기" className={btnBase} onClick={() => exec("removeFormat")}><Eraser className="h-4 w-4" /></Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          title="링크"
+          className={btnBase}
+          onClick={promptLink}
+        >
+          <Link2 className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          title="링크 해제"
+          className={btnBase}
+          onClick={() => exec("unlink")}
+        >
+          <Unlink className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          title="서식 지우기"
+          className={btnBase}
+          onClick={() => exec("removeFormat")}
+        >
+          <Eraser className="h-4 w-4" />
+        </Button>
         <span className="mx-1 h-5 w-px bg-border" />
 
-        <Button type="button" size="sm" variant="ghost" title="실행 취소" className={btnBase} onClick={() => exec("undo")}><Undo className="h-4 w-4" /></Button>
-        <Button type="button" size="sm" variant="ghost" title="다시 실행" className={btnBase} onClick={() => exec("redo")}><Redo className="h-4 w-4" /></Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          title="실행 취소"
+          className={btnBase}
+          onClick={() => exec("undo")}
+        >
+          <Undo className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          title="다시 실행"
+          className={btnBase}
+          onClick={() => exec("redo")}
+        >
+          <Redo className="h-4 w-4" />
+        </Button>
       </div>
       <div
         ref={ref}

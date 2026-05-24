@@ -288,7 +288,11 @@ function AdminPage() {
                       {b.is_published ? "게시됨" : "비공개"}
                     </p>
                     <div className="flex justify-end gap-1.5">
-                      <Button size="sm" variant={open ? "default" : "outline"} onClick={() => toggle(b.id)}>
+                      <Button
+                        size="sm"
+                        variant={open ? "default" : "outline"}
+                        onClick={() => toggle(b.id)}
+                      >
                         <Pencil className="mr-1 h-3 w-3" />
                         {open ? "선택됨" : "수정"}
                       </Button>
