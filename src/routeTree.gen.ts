@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -18,6 +19,11 @@ import { Route as BookBookIdRouteImport } from './routes/book.$bookId'
 import { Route as AdminEditPageIdRouteImport } from './routes/admin.edit.$pageId'
 import { Route as AdminBookBookIdRouteImport } from './routes/admin.book.$bookId'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/read/$pageId': typeof ReadPageIdRoute
   '/admin/book/$bookId': typeof AdminBookBookIdRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/read/$pageId': typeof ReadPageIdRoute
   '/admin/book/$bookId': typeof AdminBookBookIdRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/read/$pageId': typeof ReadPageIdRoute
   '/admin/book/$bookId': typeof AdminBookBookIdRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/library'
     | '/login'
+    | '/signup'
     | '/book/$bookId'
     | '/read/$pageId'
     | '/admin/book/$bookId'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/library'
     | '/login'
+    | '/signup'
     | '/book/$bookId'
     | '/read/$pageId'
     | '/admin/book/$bookId'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/library'
     | '/login'
+    | '/signup'
     | '/book/$bookId'
     | '/read/$pageId'
     | '/admin/book/$bookId'
@@ -128,12 +140,20 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
   BookBookIdRoute: typeof BookBookIdRoute
   ReadPageIdRoute: typeof ReadPageIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -210,6 +230,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
   BookBookIdRoute: BookBookIdRoute,
   ReadPageIdRoute: ReadPageIdRoute,
 }
