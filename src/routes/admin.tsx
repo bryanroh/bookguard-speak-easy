@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { BookPlus, Upload, Pencil, CheckCircle2, EyeOff, Trash2, FilePlus } from "lucide-react";
 import { toast } from "sonner";
@@ -32,6 +32,7 @@ const getErrorMessage = (error: unknown, fallback: string) =>
 function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [books, setBooks] = useState<Book[]>([]);
   const [uploading, setUploading] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -58,6 +59,10 @@ function AdminPage() {
   useEffect(() => {
     if (isAdmin) refresh();
   }, [isAdmin]);
+
+  if (location.pathname.startsWith("/admin/") && location.pathname !== "/admin") {
+    return <Outlet />;
+  }
 
   const loadPages = async (bookId: string) => {
     if (pagesByBook[bookId]) return;
