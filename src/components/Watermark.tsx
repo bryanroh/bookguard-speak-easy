@@ -13,7 +13,7 @@ export function Watermark({ userLabel }: Props) {
     return () => clearInterval(t);
   }, []);
   const time = new Date().toLocaleString();
-  const line = `${userLabel}  •  ${time}`;
+  const line = `섭리 신학  •  ${userLabel}  •  ${time}`;
   const tile = Array.from({ length: 60 }).map((_, i) => (
     <div key={i} className="select-none whitespace-nowrap text-[11px] font-medium tracking-wider text-foreground/15"
       style={{ transform: "rotate(-28deg)" }}>
