@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   AlignCenter,
   AlignJustify,
@@ -147,17 +147,18 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
 
   const toolbarButton = (
     command: string,
-    icon: React.ReactNode,
+    icon: ReactNode,
     label: string,
     arg?: string,
+    activeKey = command,
   ) => (
     <Button
       type="button"
       size="sm"
       variant="ghost"
       title={label}
-      aria-pressed={!!active[command]}
-      className={`${btnBase} ${active[command] ? activeBtn : ""}`}
+      aria-pressed={!!active[activeKey]}
+      className={`${btnBase} ${active[activeKey] ? activeBtn : ""}`}
       onClick={() => exec(command, arg)}
     >
       {icon}
@@ -225,11 +226,11 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
         {toolbarButton("superscript", <Superscript className="h-4 w-4" />, "위첨자")}
         <span className="mx-1 h-5 w-px bg-border" />
 
-        {toolbarButton("formatBlockH1", <Heading1 className="h-4 w-4" />, "제목 1", "<h1>")}
-        {toolbarButton("formatBlockH2", <Heading2 className="h-4 w-4" />, "제목 2", "<h2>")}
-        {toolbarButton("formatBlockH3", <Heading3 className="h-4 w-4" />, "제목 3", "<h3>")}
-        {toolbarButton("formatBlockP", <Pilcrow className="h-4 w-4" />, "본문", "<p>")}
-        {toolbarButton("formatBlockQuote", <Quote className="h-4 w-4" />, "인용", "<blockquote>")}
+        {toolbarButton("formatBlock", <Heading1 className="h-4 w-4" />, "제목 1", "<h1>", "formatBlockH1")}
+        {toolbarButton("formatBlock", <Heading2 className="h-4 w-4" />, "제목 2", "<h2>", "formatBlockH2")}
+        {toolbarButton("formatBlock", <Heading3 className="h-4 w-4" />, "제목 3", "<h3>", "formatBlockH3")}
+        {toolbarButton("formatBlock", <Pilcrow className="h-4 w-4" />, "본문", "<p>", "formatBlockP")}
+        {toolbarButton("formatBlock", <Quote className="h-4 w-4" />, "인용", "<blockquote>", "formatBlockQuote")}
         <span className="mx-1 h-5 w-px bg-border" />
 
         {toolbarButton("insertUnorderedList", <List className="h-4 w-4" />, "글머리 기호")}
