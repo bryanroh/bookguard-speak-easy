@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Watermark } from "@/components/Watermark";
 import { TTSControls } from "@/components/TTSControls";
+import { SiteHeader } from "@/components/SiteHeader";
 import { useReaderProtection } from "@/hooks/use-reader-protection";
 import { Button } from "@/components/ui/button";
 
