@@ -24,6 +24,7 @@ export function useReaderProtection({ userId, bookId, pageId, enabled = true }: 
 
   useEffect(() => {
     if (!enabled) return;
+    document.body.classList.remove("reader-blur");
 
     const log = (event_type: string) => {
       supabase.from("capture_logs").insert({
