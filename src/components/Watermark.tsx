@@ -17,7 +17,7 @@ export function Watermark({ userLabel: _userLabel }: Props) {
   const tiles = Array.from({ length: 48 }).map((_, i) => (
     <div
       key={i}
-      className="select-none whitespace-nowrap text-[12px] font-medium tracking-[0.2em] text-foreground/[0.06]"
+      className="select-none whitespace-nowrap text-[13px] font-medium tracking-[0.2em] text-foreground/[0.13]"
       style={{ transform: "rotate(-26deg)" }}
     >
       섭리 신학
