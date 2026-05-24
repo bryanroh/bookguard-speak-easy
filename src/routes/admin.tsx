@@ -248,10 +248,18 @@ function AdminPage() {
                             <div className="border-t border-border bg-muted/20 p-3">
                               <div className="flex flex-wrap gap-2">
                                 {cPages.map((p) => (
-                                  <button key={p.id} onClick={() => { setEditingPage(p); setPageHtml(p.content_html); }}
-                                    className={`rounded-md border border-border px-3 py-1 text-sm ${editingPage?.id === p.id ? "border-primary bg-primary/10" : "bg-card"}`}>
-                                    p.{p.page_number}
-                                  </button>
+                                  <div key={p.id} className="flex items-center gap-1">
+                                    <Link
+                                      to="/admin/edit/$pageId"
+                                      params={{ pageId: p.id }}
+                                      className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-1 text-sm hover:border-primary"
+                                    >
+                                      <Pencil className="h-3 w-3" />p.{p.page_number}
+                                    </Link>
+                                    <Button size="sm" variant="ghost" onClick={() => deletePage(p.id)}>
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
                                 ))}
                                 {cPages.length === 0 && <p className="text-xs text-muted-foreground">페이지 없음. + 버튼으로 추가</p>}
                               </div>
@@ -264,18 +272,6 @@ function AdminPage() {
                   </div>
                 </div>
 
-                {editingPage && (
-                  <div className="rounded-lg border border-border bg-card p-5">
-                    <div className="mb-3 flex items-center justify-between">
-                      <h3 className="font-serif text-lg font-semibold">페이지 {editingPage.page_number} 편집</h3>
-                      <div className="flex gap-2">
-                        <Button variant="destructive" size="sm" onClick={() => deletePage(editingPage.id)}><Trash2 className="mr-1 h-4 w-4" />삭제</Button>
-                        <Button size="sm" onClick={savePage}><Save className="mr-1 h-4 w-4" />저장</Button>
-                      </div>
-                    </div>
-                    <RichEditor value={pageHtml} onChange={setPageHtml} placeholder="여기에 본문을 입력하세요…" />
-                  </div>
-                )}
               </div>
             )}
           </section>
