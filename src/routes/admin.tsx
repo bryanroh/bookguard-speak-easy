@@ -26,6 +26,9 @@ type Book = {
 type Chapter = { id: string; title: string; order_index: number };
 type PageRow = { id: string; chapter_id: string; page_number: number };
 
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
 function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
@@ -130,8 +133,8 @@ function AdminPage() {
       }
       toast.success(`업로드 완료: ${parsed.pages.length}페이지`);
       refresh();
-    } catch (e: any) {
-      toast.error(e?.message || "업로드 실패");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "업로드 실패"));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -156,8 +159,8 @@ function AdminPage() {
         }
       }
       toast.success(`정제 완료: ${n}/${all.length} 페이지 업데이트`);
-    } catch (e: any) {
-      toast.error(e?.message || "정제 실패");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "정제 실패"));
     } finally {
       setUploading(false);
     }
@@ -202,7 +205,7 @@ function AdminPage() {
       .select()
       .single();
     if (error || !data) return toast.error(error?.message || "페이지 생성 실패");
-    navigate({ to: "/admin/edit/$pageId", params: { pageId: (data as any).id } });
+    navigate({ to: "/admin/edit/$pageId", params: { pageId: (data as PageRow).id } });
   };
 
   if (loading || !isAdmin)
