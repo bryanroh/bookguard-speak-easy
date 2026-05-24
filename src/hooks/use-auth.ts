@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-const PERMANENT_ADMIN_EMAILS = new Set(["bryanroh17@gmail.com"]);
-
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -18,13 +16,6 @@ export function useAuth() {
       if (!targetUser) {
         lastCheckedUserId.current = null;
         if (active) setIsAdmin(false);
-        return;
-      }
-
-      const email = targetUser.email?.toLowerCase() ?? "";
-      if (PERMANENT_ADMIN_EMAILS.has(email)) {
-        lastCheckedUserId.current = targetUser.id;
-        if (active) setIsAdmin(true);
         return;
       }
 
