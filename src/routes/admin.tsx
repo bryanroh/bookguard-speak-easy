@@ -30,8 +30,6 @@ function AdminPage() {
   const [pages, setPages] = useState<PageRow[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [openChapter, setOpenChapter] = useState<string | null>(null);
-  const [editingPage, setEditingPage] = useState<PageRow | null>(null);
-  const [pageHtml, setPageHtml] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
