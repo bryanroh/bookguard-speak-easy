@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -7,15 +7,20 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const lastCheckedUserId = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
 
     const loadAdminRole = async (targetUser: User | null) => {
       if (!targetUser) {
+        lastCheckedUserId.current = null;
         if (active) setIsAdmin(false);
         return;
       }
+      // Skip duplicate lookups for the same user (prevents flicker on auth events)
+      if (lastCheckedUserId.current === targetUser.id) return;
+      lastCheckedUserId.current = targetUser.id;
       const { data } = await supabase
         .from("user_roles")
         .select("role")
@@ -29,17 +34,22 @@ export function useAuth() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_e, s) => {
       if (!active) return;
+      const nextUser = s?.user ?? null;
       setSession(s);
-      setUser(s?.user ?? null);
-      setIsAdmin(false);
-      setTimeout(() => loadAdminRole(s?.user ?? null), 0);
+      setUser(nextUser);
+      // Only reset admin flag when user identity changes (sign-in/out/switch)
+      if (lastCheckedUserId.current !== (nextUser?.id ?? null)) {
+        setIsAdmin(false);
+      }
+      setTimeout(() => loadAdminRole(nextUser), 0);
     });
 
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       if (!active) return;
+      const nextUser = s?.user ?? null;
       setSession(s);
-      setUser(s?.user ?? null);
-      await loadAdminRole(s?.user ?? null);
+      setUser(nextUser);
+      await loadAdminRole(nextUser);
       if (active) setLoading(false);
     });
 

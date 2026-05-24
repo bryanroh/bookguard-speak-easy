@@ -44,7 +44,9 @@ function EditPage() {
   const [loadingPage, setLoadingPage] = useState(true);
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) navigate({ to: "/login" });
+    if (loading) return;
+    if (!user) navigate({ to: "/login" });
+    else if (!isAdmin) navigate({ to: "/library" });
   }, [user, isAdmin, loading, navigate]);
 
   useEffect(() => {
