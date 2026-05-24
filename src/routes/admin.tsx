@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { BookPlus, Upload, Pencil, CheckCircle2, EyeOff, Trash2 } from "lucide-react";
+import { BookPlus, Upload, Pencil, CheckCircle2, EyeOff, Trash2, ChevronDown, ChevronRight, FilePlus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,12 +14,16 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Book = { id: string; title: string; description: string | null; language: string; is_published: boolean; created_at: string };
+type Chapter = { id: string; title: string; order_index: number };
+type PageRow = { id: string; chapter_id: string; page_number: number };
 
 function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [books, setBooks] = useState<Book[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [pagesByBook, setPagesByBook] = useState<Record<string, { chapter: Chapter; pages: PageRow[] }[]>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -34,6 +38,25 @@ function AdminPage() {
     setBooks((data as Book[]) ?? []);
   };
   useEffect(() => { if (isAdmin) refresh(); }, [isAdmin]);
+
+  const loadPages = async (bookId: string) => {
+    if (pagesByBook[bookId]) return;
+    const { data: cs } = await supabase.from("chapters").select("id,title,order_index").eq("book_id", bookId).order("order_index");
+    const chapters = (cs as Chapter[]) ?? [];
+    if (chapters.length === 0) { setPagesByBook((p) => ({ ...p, [bookId]: [] })); return; }
+    const { data: ps } = await supabase.from("pages").select("id,chapter_id,page_number").in("chapter_id", chapters.map((c) => c.id)).order("page_number");
+    const pages = (ps as PageRow[]) ?? [];
+    setPagesByBook((p) => ({
+      ...p,
+      [bookId]: chapters.map((c) => ({ chapter: c, pages: pages.filter((x) => x.chapter_id === c.id) })),
+    }));
+  };
+
+  const toggle = async (id: string) => {
+    const next = openId === id ? null : id;
+    setOpenId(next);
+    if (next) await loadPages(next);
+  };
 
   const handleHtmlUpload = async (file: File) => {
     setUploading(true);
@@ -92,7 +115,15 @@ function AdminPage() {
   const deleteBook = async (id: string) => {
     if (!confirm("이 책과 모든 챕터/페이지를 삭제합니다.")) return;
     await supabase.from("books").delete().eq("id", id);
+    setPagesByBook((p) => { const c = { ...p }; delete c[id]; return c; });
     refresh();
+  };
+  const addPage = async (bookId: string, chapterId: string) => {
+    const groups = pagesByBook[bookId] ?? [];
+    const max = Math.max(0, ...(groups.find((g) => g.chapter.id === chapterId)?.pages.map((p) => p.page_number) ?? []));
+    const { data, error } = await supabase.from("pages").insert({ chapter_id: chapterId, page_number: max + 1, content_html: "" }).select().single();
+    if (error || !data) return toast.error(error?.message || "페이지 생성 실패");
+    navigate({ to: "/admin/edit/$pageId", params: { pageId: (data as any).id } });
   };
 
   if (loading || !isAdmin) return <div className="min-h-screen bg-background"><SiteHeader /><p className="p-8 text-center">권한 확인 중…</p></div>;
@@ -100,11 +131,11 @@ function AdminPage() {
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <div className="mb-6 flex items-center justify-between gap-2">
+      <main className="mx-auto max-w-5xl px-4 py-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="font-serif text-3xl font-bold">관리</h1>
-            <p className="mt-1 text-sm text-muted-foreground">책을 한 줄로 표시합니다. 수정 후 [완료]를 누르면 도서관에 게시됩니다.</p>
+            <p className="mt-1 text-sm text-muted-foreground">한 줄씩 책을 확인하고 [수정]으로 본문을 직접 고치세요. [완료]를 누르면 도서관에 게시됩니다.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <input ref={fileInputRef} type="file" accept=".html,.htm,text/html" className="hidden"
@@ -117,44 +148,82 @@ function AdminPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-border bg-card">
-          <div className="grid grid-cols-[1fr_2fr_110px_320px] items-center gap-3 border-b border-border bg-muted/40 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <div>제목</div>
-            <div>설명</div>
-            <div>상태</div>
-            <div className="text-right">작업</div>
-          </div>
-          {books.map((b) => (
-            <div key={b.id} className="grid grid-cols-[1fr_2fr_110px_320px] items-center gap-3 border-b border-border px-4 py-3 last:border-b-0 hover:bg-muted/20">
-              <div className="min-w-0">
-                <div className="truncate font-medium">{b.title}</div>
-                <div className="text-xs text-muted-foreground">{b.language.toUpperCase()} · {new Date(b.created_at).toLocaleDateString()}</div>
-              </div>
-              <div className="line-clamp-2 text-sm text-muted-foreground">{b.description || "—"}</div>
-              <div>
-                {b.is_published
-                  ? <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">게시됨</span>
-                  : <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">비공개</span>}
-              </div>
-              <div className="flex justify-end gap-2">
-                <Link to="/admin/book/$bookId" params={{ bookId: b.id }}>
-                  <Button size="sm" variant="outline"><Pencil className="mr-1 h-3 w-3" />수정</Button>
-                </Link>
-                <Button size="sm" onClick={() => publishBook(b)}>
-                  {b.is_published
-                    ? <><EyeOff className="mr-1 h-3 w-3" />비공개</>
-                    : <><CheckCircle2 className="mr-1 h-3 w-3" />완료</>}
-                </Button>
-                <Button size="sm" variant="destructive" onClick={() => deleteBook(b.id)}>
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          ))}
+        <ul className="divide-y divide-border rounded-md border border-border bg-card">
+          {books.map((b) => {
+            const open = openId === b.id;
+            const groups = pagesByBook[b.id] ?? [];
+            const totalPages = groups.reduce((n, g) => n + g.pages.length, 0);
+            return (
+              <li key={b.id}>
+                <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30">
+                  <button onClick={() => toggle(b.id)} className="text-muted-foreground hover:text-foreground" aria-label="펼치기">
+                    {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline gap-2">
+                      <span className="truncate font-medium">{b.title}</span>
+                      {b.is_published
+                        ? <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">게시됨</span>
+                        : <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">비공개</span>}
+                    </div>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {b.description || "설명 없음"} · {b.language.toUpperCase()} · {new Date(b.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-1.5">
+                    <Button size="sm" variant="outline" onClick={() => toggle(b.id)}>
+                      <Pencil className="mr-1 h-3 w-3" />수정
+                    </Button>
+                    <Button size="sm" variant={b.is_published ? "secondary" : "default"} onClick={() => publishBook(b)}>
+                      {b.is_published
+                        ? <><EyeOff className="mr-1 h-3 w-3" />비공개</>
+                        : <><CheckCircle2 className="mr-1 h-3 w-3" />완료</>}
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => deleteBook(b.id)}>
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+
+                {open && (
+                  <div className="border-t border-border bg-muted/10 px-4 py-3">
+                    {groups.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">불러오는 중… 또는 챕터 없음.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {groups.map((g) => (
+                          <div key={g.chapter.id}>
+                            <div className="mb-1 flex items-center justify-between">
+                              <p className="text-xs font-semibold text-muted-foreground">{g.chapter.title} · {g.pages.length}페이지</p>
+                              <Button size="sm" variant="ghost" onClick={() => addPage(b.id, g.chapter.id)}>
+                                <FilePlus className="mr-1 h-3 w-3" />페이지 추가
+                              </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {g.pages.map((p) => (
+                                <Link key={p.id} to="/admin/edit/$pageId" params={{ pageId: p.id }}
+                                  className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2.5 py-1 text-xs hover:border-primary hover:text-primary">
+                                  <Pencil className="h-3 w-3" />p.{p.page_number}
+                                </Link>
+                              ))}
+                              {g.pages.length === 0 && <p className="text-xs text-muted-foreground">페이지 없음.</p>}
+                            </div>
+                          </div>
+                        ))}
+                        {totalPages > 0 && (
+                          <p className="pt-1 text-[11px] text-muted-foreground">페이지를 클릭하면 원본 본문(글자·자간·띄어쓰기)을 바로 수정할 수 있습니다.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
           {books.length === 0 && (
-            <div className="px-4 py-12 text-center text-sm text-muted-foreground">아직 책이 없습니다. HTML 업로드 또는 새 책으로 시작하세요.</div>
+            <li className="px-4 py-12 text-center text-sm text-muted-foreground">아직 책이 없습니다. HTML 업로드 또는 새 책으로 시작하세요.</li>
           )}
-        </div>
+        </ul>
       </main>
     </div>
   );
