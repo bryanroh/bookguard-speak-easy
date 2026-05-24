@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+const PERMANENT_ADMIN_EMAILS = new Set(["bryanroh17@gmail.com"]);
+
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -18,16 +20,26 @@ export function useAuth() {
         if (active) setIsAdmin(false);
         return;
       }
-      // Skip duplicate lookups for the same user (prevents flicker on auth events)
-      if (lastCheckedUserId.current === targetUser.id) return;
-      lastCheckedUserId.current = targetUser.id;
+
+      const email = targetUser.email?.toLowerCase() ?? "";
+      if (PERMANENT_ADMIN_EMAILS.has(email)) {
+        lastCheckedUserId.current = targetUser.id;
+        if (active) setIsAdmin(true);
+        return;
+      }
+
+      // Skip duplicate lookups only after the same user was already confirmed as admin.
+      if (lastCheckedUserId.current === targetUser.id && isAdmin) return;
       const { data } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", targetUser.id)
         .eq("role", "admin")
         .maybeSingle();
-      if (active) setIsAdmin(!!data);
+      if (active) {
+        lastCheckedUserId.current = targetUser.id;
+        setIsAdmin(!!data);
+      }
     };
 
     const {
@@ -41,7 +53,10 @@ export function useAuth() {
       if (lastCheckedUserId.current !== (nextUser?.id ?? null)) {
         setIsAdmin(false);
       }
-      setTimeout(() => loadAdminRole(nextUser), 0);
+      setTimeout(async () => {
+        await loadAdminRole(nextUser);
+        if (active) setLoading(false);
+      }, 0);
     });
 
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
