@@ -74,11 +74,12 @@ function ReaderPage() {
   // Sentence-highlighted HTML
   const highlightedHtml = useMemo(() => {
     if (!page) return "";
+    if (typeof document === "undefined" || activeSentence < 0) return page.content_html;
     const div = document.createElement("div");
     div.innerHTML = page.content_html;
     const text = div.textContent || "";
     const sentences = text.split(/(?<=[.!?。！？\n])\s+/).map((s) => s.trim()).filter(Boolean);
-    if (activeSentence < 0 || activeSentence >= sentences.length) return page.content_html;
+    if (activeSentence >= sentences.length) return page.content_html;
     const target = sentences[activeSentence];
     const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     return page.content_html.replace(new RegExp(escaped, "i"), `<mark class="tts-active">${target}</mark>`);
