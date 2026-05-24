@@ -25,7 +25,9 @@ export function useAuth() {
       if (active) setIsAdmin(!!data);
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_e, s) => {
       if (!active) return;
       setSession(s);
       setUser(s?.user ?? null);
@@ -41,7 +43,10 @@ export function useAuth() {
       if (active) setLoading(false);
     });
 
-    return () => { active = false; subscription.unsubscribe(); };
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return { session, user, isAdmin, loading };
