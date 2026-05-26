@@ -40,16 +40,24 @@ function AdminPage() {
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState<string>("");
   const [savingTitleId, setSavingTitleId] = useState<string | null>(null);
-  const [sortMode, setSortMode] = useState<"date" | "title">("date");
+  const [editingDescId, setEditingDescId] = useState<string | null>(null);
+  const [descDraft, setDescDraft] = useState<string>("");
+  const [savingDescId, setSavingDescId] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<"date" | "title" | "lecture">("date");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [pagesByBook, setPagesByBook] = useState<
     Record<string, { chapter: Chapter; pages: PageRow[] }[]>
   >({});
 
-  const sortedBooks = [...books].sort((a, b) =>
-    sortMode === "title"
-      ? a.title.localeCompare(b.title, "ko")
-      : new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-  );
+  const filteredBooks = searchQuery.trim()
+    ? books.filter((b) => b.title.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+    : books;
+  const sortedBooks = [...filteredBooks].sort((a, b) => {
+    if (sortMode === "title") return a.title.localeCompare(b.title, "ko");
+    if (sortMode === "lecture")
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const startEditTitle = (b: Book) => {
@@ -72,6 +80,33 @@ function AdminPage() {
     }
     toast.success("제목 저장됨");
     setBooks((prev) => prev.map((x) => (x.id === b.id ? { ...x, title: next } : x)));
+  };
+
+  const startEditDesc = (b: Book) => {
+    setEditingDescId(b.id);
+    setDescDraft(b.description ?? "");
+  };
+  const commitDesc = async (b: Book) => {
+    const next = descDraft.trim();
+    setEditingDescId(null);
+    if (next === (b.description ?? "")) {
+      setDescDraft("");
+      return;
+    }
+    setSavingDescId(b.id);
+    const { error } = await supabase
+      .from("books")
+      .update({ description: next || null })
+      .eq("id", b.id);
+    setSavingDescId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("설명 저장됨");
+    setBooks((prev) =>
+      prev.map((x) => (x.id === b.id ? { ...x, description: next || null } : x)),
+    );
   };
 
   useEffect(() => {
@@ -269,21 +304,42 @@ function AdminPage() {
         </div>
 
         <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
-          <div className="mr-auto inline-flex overflow-hidden rounded-md border border-border">
-            <button
-              type="button"
-              onClick={() => setSortMode("date")}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "date" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
-            >
-              날짜순
-            </button>
-            <button
-              type="button"
-              onClick={() => setSortMode("title")}
-              className={`border-l border-border px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "title" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
-            >
-              제목/목차순
-            </button>
+          <div className="mr-auto flex flex-wrap items-center gap-2">
+            <div className="inline-flex overflow-hidden rounded-md border border-border">
+              <button
+                type="button"
+                onClick={() => setSortMode("lecture")}
+                className={`px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "lecture" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+              >
+                강의순
+              </button>
+              <button
+                type="button"
+                onClick={() => setSortMode("title")}
+                className={`border-l border-border px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "title" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+              >
+                제목순
+              </button>
+              <button
+                type="button"
+                onClick={() => setSortMode("date")}
+                className={`border-l border-border px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "date" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+              >
+                날짜순
+              </button>
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="제목으로 검색…"
+              className="h-8 w-56 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/40"
+            />
+            {searchQuery && (
+              <span className="text-xs text-muted-foreground">
+                {sortedBooks.length}건
+              </span>
+            )}
           </div>
           <input
             ref={fileInputRef}
@@ -357,9 +413,33 @@ function AdminPage() {
                         {savingTitleId === b.id && " · 저장 중…"}
                       </button>
                     )}
-                    <p className="min-w-0 truncate text-muted-foreground">
-                      {b.description || "설명 없음"}
-                    </p>
+                    {editingDescId === b.id ? (
+                      <input
+                        autoFocus
+                        value={descDraft}
+                        onChange={(e) => setDescDraft(e.target.value)}
+                        onBlur={() => commitDesc(b)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                          if (e.key === "Escape") {
+                            setEditingDescId(null);
+                            setDescDraft("");
+                          }
+                        }}
+                        placeholder="설명 내용을 입력하세요"
+                        className="min-w-0 w-full rounded border border-primary bg-background px-2 py-1 text-sm outline-none ring-1 ring-primary/40"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => startEditDesc(b)}
+                        title="클릭해서 설명 수정"
+                        className={`min-w-0 truncate text-left text-muted-foreground hover:text-primary hover:underline ${savingDescId === b.id ? "opacity-60" : ""}`}
+                      >
+                        {b.description || "설명 없음 (클릭해서 추가)"}
+                        {savingDescId === b.id && " · 저장 중…"}
+                      </button>
+                    )}
                     <p className="text-xs text-muted-foreground">
                       {b.is_published ? "게시됨" : "비공개"}
                     </p>
