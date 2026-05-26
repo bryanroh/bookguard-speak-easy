@@ -37,10 +37,35 @@ function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
+  const [titleDraft, setTitleDraft] = useState<string>("");
+  const [savingTitleId, setSavingTitleId] = useState<string | null>(null);
   const [pagesByBook, setPagesByBook] = useState<
     Record<string, { chapter: Chapter; pages: PageRow[] }[]>
   >({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const startEditTitle = (b: Book) => {
+    setEditingTitleId(b.id);
+    setTitleDraft(b.title);
+  };
+  const commitTitle = async (b: Book) => {
+    const next = titleDraft.trim();
+    setEditingTitleId(null);
+    if (!next || next === b.title) {
+      setTitleDraft("");
+      return;
+    }
+    setSavingTitleId(b.id);
+    const { error } = await supabase.from("books").update({ title: next }).eq("id", b.id);
+    setSavingTitleId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("제목 저장됨");
+    setBooks((prev) => prev.map((x) => (x.id === b.id ? { ...x, title: next } : x)));
+  };
 
   useEffect(() => {
     if (!loading) {
@@ -283,9 +308,32 @@ function AdminPage() {
                       open ? "bg-primary/10 ring-1 ring-inset ring-primary/40" : "hover:bg-muted/30"
                     }`}
                   >
-                    <p className={`min-w-0 truncate font-medium ${open ? "text-primary" : ""}`}>
-                      {b.title}
-                    </p>
+                    {editingTitleId === b.id ? (
+                      <input
+                        autoFocus
+                        value={titleDraft}
+                        onChange={(e) => setTitleDraft(e.target.value)}
+                        onBlur={() => commitTitle(b)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                          if (e.key === "Escape") {
+                            setEditingTitleId(null);
+                            setTitleDraft("");
+                          }
+                        }}
+                        className="min-w-0 w-full rounded border border-primary bg-background px-2 py-1 text-sm font-medium outline-none ring-1 ring-primary/40"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => startEditTitle(b)}
+                        title="클릭해서 제목 수정"
+                        className={`min-w-0 truncate text-left font-medium hover:text-primary hover:underline ${open ? "text-primary" : ""} ${savingTitleId === b.id ? "opacity-60" : ""}`}
+                      >
+                        {b.title}
+                        {savingTitleId === b.id && " · 저장 중…"}
+                      </button>
+                    )}
                     <p className="min-w-0 truncate text-muted-foreground">
                       {b.description || "설명 없음"}
                     </p>
