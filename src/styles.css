@@ -130,14 +130,28 @@
   }
 
   /* Safety net for imported HTML — guarantees text is visible inside the reader. */
-  .imported-html { color: var(--color-ink); background: transparent; }
-  .imported-html * { max-width: 100%; visibility: visible !important; }
+  .imported-html { color: var(--color-ink); background: transparent; font-family: var(--font-serif); }
+  .imported-html * {
+    max-width: 100% !important;
+    visibility: visible !important;
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    line-height: inherit !important;
+    white-space: normal !important;
+    float: none !important;
+    transform: none !important;
+    top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+    font-family: inherit !important;
+  }
   .imported-html [style*="color:#fff"],
   .imported-html [style*="color: #fff"],
   .imported-html [style*="color:white"],
   .imported-html [style*="color: white"],
   .imported-html [style*="color:transparent"] { color: var(--color-ink) !important; }
-  .imported-html img, .imported-html svg { height: auto; }
+  .imported-html img, .imported-html svg { height: auto; max-width: 100%; }
 
 
   /* ===== Classic Bible-style open book ===== */
