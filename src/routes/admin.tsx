@@ -37,10 +37,35 @@ function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
+  const [titleDraft, setTitleDraft] = useState<string>("");
+  const [savingTitleId, setSavingTitleId] = useState<string | null>(null);
   const [pagesByBook, setPagesByBook] = useState<
     Record<string, { chapter: Chapter; pages: PageRow[] }[]>
   >({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const startEditTitle = (b: Book) => {
+    setEditingTitleId(b.id);
+    setTitleDraft(b.title);
+  };
+  const commitTitle = async (b: Book) => {
+    const next = titleDraft.trim();
+    setEditingTitleId(null);
+    if (!next || next === b.title) {
+      setTitleDraft("");
+      return;
+    }
+    setSavingTitleId(b.id);
+    const { error } = await supabase.from("books").update({ title: next }).eq("id", b.id);
+    setSavingTitleId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("제목 저장됨");
+    setBooks((prev) => prev.map((x) => (x.id === b.id ? { ...x, title: next } : x)));
+  };
 
   useEffect(() => {
     if (!loading) {
