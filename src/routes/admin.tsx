@@ -549,6 +549,15 @@ function AdminPage() {
                       <Button
                         size="sm"
                         variant="ghost"
+                        onClick={() => resplitBook(b)}
+                        title="모든 페이지를 합쳐 자동으로 페이지별로 다시 분할"
+                        aria-label="재분할"
+                      >
+                        <Scissors className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
                         onClick={() => deleteBook(b.id)}
                         aria-label="삭제"
                       >
