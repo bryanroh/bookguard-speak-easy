@@ -31,19 +31,21 @@ function sanitizeCss(css: string): string {
       .filter((d) => {
         if (!d) return false;
         const low = d.toLowerCase();
-        // Hide-text patterns
         if (/visibility\s*:\s*hidden/.test(low)) return false;
         if (/display\s*:\s*none/.test(low)) return false;
         if (/font-size\s*:\s*0(pt|px|em|rem)?\b/.test(low)) return false;
         if (/opacity\s*:\s*0(\.0+)?\b/.test(low)) return false;
-        // White/transparent text on light bg
         if (/color\s*:\s*(#fff(fff)?|white|transparent|rgba?\(\s*255\s*,\s*255\s*,\s*255)/.test(low)) return false;
-        // Page-layout escape
-        if (/position\s*:\s*absolute/.test(low)) return false;
-        if (/position\s*:\s*fixed/.test(low)) return false;
-        // Off-screen tricks
+        if (/position\s*:\s*(absolute|fixed|relative)/.test(low)) return false;
         if (/(left|top|right|bottom)\s*:\s*-?\d{3,}px/.test(low)) return false;
-        // Background-color that would match paper (white) is fine but drop dark backgrounds
+        // HWP/Word export layout props that break flow
+        if (/^(left|top|right|bottom)\s*:/.test(low)) return false;
+        if (/^(width|height|min-height|max-height|min-width|max-width)\s*:/.test(low)) return false;
+        if (/^line-height\s*:/.test(low)) return false;
+        if (/^white-space\s*:\s*nowrap/.test(low)) return false;
+        if (/^font-family\s*:/.test(low)) return false;
+        if (/^float\s*:/.test(low)) return false;
+        if (/^transform\s*:/.test(low)) return false;
         if (/background(-color)?\s*:\s*(#000|black|rgb\(\s*0\s*,\s*0\s*,\s*0)/.test(low)) return false;
         return true;
       })
