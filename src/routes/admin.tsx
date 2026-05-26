@@ -1,11 +1,11 @@
 import { createFileRoute, useNavigate, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { BookPlus, Upload, Pencil, CheckCircle2, EyeOff, Trash2, FilePlus } from "lucide-react";
+import { BookPlus, Upload, Pencil, CheckCircle2, EyeOff, Trash2, FilePlus, Scissors } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { SiteHeader } from "@/components/SiteHeader";
-import { parseHtmlFile, recleanStoredPage } from "@/lib/html-import";
+import { parseHtmlFile, recleanStoredPage, resplitCombinedHtml } from "@/lib/html-import";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/admin")({
