@@ -382,11 +382,10 @@ const I18nCtx = createContext<Ctx | null>(null);
 const STORAGE_KEY = "app.lang";
 
 function detectInitial(): Lang {
+  // 기본은 항상 한국어. 사용자가 직접 선택한 언어만 기억합니다.
   if (typeof window === "undefined") return "ko";
   const saved = window.localStorage.getItem(STORAGE_KEY) as Lang | null;
   if (saved && dict[saved]) return saved;
-  const nav = (window.navigator.language || "ko").slice(0, 2).toLowerCase();
-  if (nav === "ko" || nav === "en" || nav === "ja" || nav === "zh" || nav === "es" || nav === "fr") return nav;
   return "ko";
 }
 
