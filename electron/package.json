@@ -1,0 +1,9 @@
+{
+  "name": "seomri-webbook",
+  "productName": "SeomriWebbook",
+  "version": "1.0.0",
+  "description": "섭리 웹북 — 보안 디지털 도서관",
+  "main": "main.cjs",
+  "author": "Seomri",
+  "license": "UNLICENSED"
+}
