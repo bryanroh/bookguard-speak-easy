@@ -266,6 +266,83 @@ function AdminPage() {
     });
     refresh();
   };
+
+  const resplitBook = async (b: Book) => {
+    if (
+      !confirm(
+        `"${b.title}"의 모든 페이지를 합쳐서 다시 페이지별로 자동 분할합니다.\n원본 내용은 그대로 보존되고 페이지 단위만 새로 나뉩니다. 진행할까요?`,
+      )
+    )
+      return;
+    setUploading(true);
+    try {
+      const { data: cs } = await supabase
+        .from("chapters")
+        .select("id")
+        .eq("book_id", b.id)
+        .order("order_index");
+      const chapters = cs ?? [];
+      if (chapters.length === 0) {
+        toast.error("챕터가 없습니다.");
+        return;
+      }
+      const chapterId = chapters[0].id;
+      const { data: ps } = await supabase
+        .from("pages")
+        .select("id,page_number,content_html")
+        .in(
+          "chapter_id",
+          chapters.map((c) => c.id),
+        )
+        .order("page_number");
+      const allPages = ps ?? [];
+      if (allPages.length === 0) {
+        toast.error("페이지가 없습니다.");
+        return;
+      }
+      const combined = allPages.map((p) => p.content_html).join("\n");
+      const newPages = resplitCombinedHtml(combined);
+      if (newPages.length <= allPages.length) {
+        toast.error(
+          `더 작은 페이지 단위를 찾지 못했습니다. (현재 ${allPages.length} → 분할 결과 ${newPages.length})`,
+        );
+        return;
+      }
+      // Delete pages across all chapters of this book, then insert into first chapter
+      const { error: de } = await supabase
+        .from("pages")
+        .delete()
+        .in(
+          "chapter_id",
+          chapters.map((c) => c.id),
+        );
+      if (de) {
+        toast.error(de.message);
+        return;
+      }
+      const rows = newPages.map((html, i) => ({
+        chapter_id: chapterId,
+        page_number: i + 1,
+        content_html: html,
+      }));
+      const { error: ie } = await supabase.from("pages").insert(rows);
+      if (ie) {
+        toast.error(ie.message);
+        return;
+      }
+      toast.success(`재분할 완료: ${allPages.length} → ${newPages.length}페이지`);
+      setPagesByBook((p) => {
+        const c = { ...p };
+        delete c[b.id];
+        return c;
+      });
+      if (openId === b.id) await loadPages(b.id);
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "재분할 실패"));
+    } finally {
+      setUploading(false);
+    }
+  };
   const addPage = async (bookId: string, chapterId: string) => {
     const groups = pagesByBook[bookId] ?? [];
     const max = Math.max(
