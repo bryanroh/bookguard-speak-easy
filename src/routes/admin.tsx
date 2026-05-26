@@ -413,9 +413,33 @@ function AdminPage() {
                         {savingTitleId === b.id && " · 저장 중…"}
                       </button>
                     )}
-                    <p className="min-w-0 truncate text-muted-foreground">
-                      {b.description || "설명 없음"}
-                    </p>
+                    {editingDescId === b.id ? (
+                      <input
+                        autoFocus
+                        value={descDraft}
+                        onChange={(e) => setDescDraft(e.target.value)}
+                        onBlur={() => commitDesc(b)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                          if (e.key === "Escape") {
+                            setEditingDescId(null);
+                            setDescDraft("");
+                          }
+                        }}
+                        placeholder="설명 내용을 입력하세요"
+                        className="min-w-0 w-full rounded border border-primary bg-background px-2 py-1 text-sm outline-none ring-1 ring-primary/40"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => startEditDesc(b)}
+                        title="클릭해서 설명 수정"
+                        className={`min-w-0 truncate text-left text-muted-foreground hover:text-primary hover:underline ${savingDescId === b.id ? "opacity-60" : ""}`}
+                      >
+                        {b.description || "설명 없음 (클릭해서 추가)"}
+                        {savingDescId === b.id && " · 저장 중…"}
+                      </button>
+                    )}
                     <p className="text-xs text-muted-foreground">
                       {b.is_published ? "게시됨" : "비공개"}
                     </p>
