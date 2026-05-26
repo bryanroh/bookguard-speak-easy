@@ -62,9 +62,28 @@ export function stripLetterSpacing(html: string): string {
   return div.innerHTML;
 }
 
-/** One-shot: 공백 정리 + 한·영 띄어쓰기 + 자간 제거 (HTML in/out, preserves tags). */
+/** Strip Word/한글 특유 잡코드: MsoNormal, o:p, conditional comments, smart quotes, 빈 단락 */
+export function stripWordCruft(html: string): string {
+  if (typeof document === "undefined") return html;
+  const h = html
+    .replace(/<!--\[if[\s\S]*?<!\[endif\]-->/g, "")
+    .replace(/<o:p\b[^>]*>[\s\S]*?<\/o:p>/gi, "")
+    .replace(/<o:p\b[^>]*\/?>/gi, "")
+    .replace(/\sclass="?Mso[A-Za-z0-9]*"?/g, "")
+    .replace(/\sxmlns:[a-z]+="[^"]*"/gi, "")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[\u2018\u2019]/g, "'");
+  const div = document.createElement("div");
+  div.innerHTML = h;
+  div.querySelectorAll("p,span,div").forEach((el) => {
+    if (!el.textContent?.trim() && el.children.length === 0) el.remove();
+  });
+  return div.innerHTML;
+}
+
+/** One-shot: Word 잡코드 + 공백 정리 + 한·영 띄어쓰기 + 자간 제거 (HTML in/out, preserves tags). */
 export function autoCleanHtml(html: string): string {
-  const stripped = stripLetterSpacing(html);
+  const stripped = stripLetterSpacing(stripWordCruft(html));
   if (typeof document === "undefined") return stripped;
   const div = document.createElement("div");
   div.innerHTML = stripped;
