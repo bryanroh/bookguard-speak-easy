@@ -40,16 +40,24 @@ function AdminPage() {
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState<string>("");
   const [savingTitleId, setSavingTitleId] = useState<string | null>(null);
-  const [sortMode, setSortMode] = useState<"date" | "title">("date");
+  const [editingDescId, setEditingDescId] = useState<string | null>(null);
+  const [descDraft, setDescDraft] = useState<string>("");
+  const [savingDescId, setSavingDescId] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<"date" | "title" | "lecture">("date");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [pagesByBook, setPagesByBook] = useState<
     Record<string, { chapter: Chapter; pages: PageRow[] }[]>
   >({});
 
-  const sortedBooks = [...books].sort((a, b) =>
-    sortMode === "title"
-      ? a.title.localeCompare(b.title, "ko")
-      : new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-  );
+  const filteredBooks = searchQuery.trim()
+    ? books.filter((b) => b.title.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+    : books;
+  const sortedBooks = [...filteredBooks].sort((a, b) => {
+    if (sortMode === "title") return a.title.localeCompare(b.title, "ko");
+    if (sortMode === "lecture")
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const startEditTitle = (b: Book) => {
