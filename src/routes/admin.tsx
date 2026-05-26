@@ -40,9 +40,16 @@ function AdminPage() {
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState<string>("");
   const [savingTitleId, setSavingTitleId] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<"date" | "title">("date");
   const [pagesByBook, setPagesByBook] = useState<
     Record<string, { chapter: Chapter; pages: PageRow[] }[]>
   >({});
+
+  const sortedBooks = [...books].sort((a, b) =>
+    sortMode === "title"
+      ? a.title.localeCompare(b.title, "ko")
+      : new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const startEditTitle = (b: Book) => {
