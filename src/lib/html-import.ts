@@ -104,35 +104,112 @@ function extractStyles(doc: Document): string {
   return parts.join("\n");
 }
 
+/** Detect a "new page starts here" marker on this element. */
+function isPageBreak(el: Element): boolean {
+  const s = (el.getAttribute("style") || "").toLowerCase();
+  if (
+    s.includes("page-break-before") ||
+    s.includes("page-break-after") ||
+    s.includes("break-before:page") ||
+    s.includes("break-after:page") ||
+    s.includes("mso-special-character:line-break") ||
+    s.includes("mso-special-character: line-break")
+  )
+    return true;
+  const cls = (typeof el.className === "string" ? el.className : "").toLowerCase();
+  if (
+    cls.includes("page-break") ||
+    cls.includes("mso-pagebreak") ||
+    cls.includes("msopagebreak") ||
+    cls.includes("hwp-page") ||
+    /\bsection\d+\b/.test(cls) ||
+    /\bwordsection\d+\b/.test(cls) ||
+    cls.includes("pagecontainer") ||
+    cls === "page"
+  )
+    return true;
+  if (el.tagName === "HR" && (cls.includes("page") || s.includes("page-break"))) return true;
+  // HWP/Word per-page wrapper divs often set an A4-ish mm height
+  if (
+    el.tagName === "DIV" &&
+    /height\s*:\s*(2[6-9]\d|29[0-9]|30\d)(\.\d+)?\s*mm/.test(s)
+  )
+    return true;
+  return false;
+}
+
+/** Descend through generic single-wrapper containers (HWPDocument, container,
+ * mainContent, …) to reach a meaningful list of blocks. */
+function flattenTopBlocks(body: HTMLElement): HTMLElement[] {
+  let blocks: HTMLElement[] = Array.from(body.children) as HTMLElement[];
+  for (let i = 0; i < 5; i++) {
+    if (blocks.length !== 1) break;
+    const only = blocks[0];
+    if (only.tagName !== "DIV" && only.tagName !== "SECTION") break;
+    if (isPageBreak(only)) break;
+    const inner = Array.from(only.children) as HTMLElement[];
+    if (inner.length < 2) break;
+    blocks = inner;
+  }
+  return blocks;
+}
+
 function splitIntoPages(body: HTMLElement): string[] {
-  const children = Array.from(body.children) as HTMLElement[];
+  const blocks = flattenTopBlocks(body);
   const pages: string[][] = [[]];
-  const isBreak = (el: HTMLElement) => {
-    const s = (el.getAttribute("style") || "").toLowerCase();
-    if (s.includes("page-break-before") || s.includes("page-break-after")) return true;
-    if (el.tagName === "HR" && (el.className?.toLowerCase().includes("page") || s.includes("page-break"))) return true;
-    if (el.classList?.contains("page-break") || el.classList?.contains("MsoPageBreak")) return true;
-    return false;
-  };
-  for (const el of children) {
-    if (isBreak(el)) { pages.push([]); continue; }
+  for (const el of blocks) {
+    if (isPageBreak(el)) {
+      if (pages[pages.length - 1].length > 0) pages.push([]);
+      const inner = (el.innerHTML || "").trim();
+      if (inner) pages[pages.length - 1].push(inner);
+      continue;
+    }
     pages[pages.length - 1].push(el.outerHTML);
   }
-  if (pages.length === 1) {
+  let result = pages.map((c) => c.join("\n")).filter((p) => p.trim().length > 0);
+  // Fallback: still one page but lots of text → chunk by character count
+  if (result.length <= 1) {
     const text = body.textContent || "";
-    if (text.length > 4000) {
+    if (text.length > 3500) {
       const chunks: string[][] = [[]];
       let count = 0;
-      for (const el of children) {
+      for (const el of blocks) {
         const len = (el.textContent || "").length;
-        if (count + len > 3500 && chunks[chunks.length - 1].length > 0) { chunks.push([]); count = 0; }
+        if (count + len > 3000 && chunks[chunks.length - 1].length > 0) {
+          chunks.push([]);
+          count = 0;
+        }
         chunks[chunks.length - 1].push(el.outerHTML);
         count += len;
       }
-      return chunks.map((c) => c.join("\n")).filter((p) => p.trim().length > 0);
+      result = chunks.map((c) => c.join("\n")).filter((p) => p.trim().length > 0);
     }
   }
-  return pages.map((c) => c.join("\n")).filter((p) => p.trim().length > 0);
+  return result;
+}
+
+/** Re-split an existing book whose pages were merged into one DB row.
+ * Pass the combined HTML of all current pages; returns the new page HTMLs
+ * (each already wrapped + style-scoped, ready to insert into pages.content_html). */
+export function resplitCombinedHtml(combinedHtml: string): string[] {
+  if (typeof document === "undefined") return [combinedHtml];
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(
+    `<!doctype html><html><body>${combinedHtml}</body></html>`,
+    "text/html",
+  );
+  const rawCss = extractStyles(doc);
+  const scopedCss = sanitizeCss(rawCss);
+  doc.querySelectorAll("style").forEach((s) => s.remove());
+  // Unwrap any prior .imported-html wrappers so we don't treat them as one block
+  doc.querySelectorAll(".imported-html").forEach((w) => {
+    while (w.firstChild) w.parentNode?.insertBefore(w.firstChild, w);
+    w.remove();
+  });
+  if (doc.body) sanitizeInlineStyles(doc.body);
+  const pages = doc.body ? splitIntoPages(doc.body) : [];
+  const styleTag = scopedCss ? `<style>${scopedCss}</style>` : "";
+  return pages.map((p) => `${styleTag}<div class="imported-html">${p}</div>`);
 }
 
 export function parseHtmlFile(htmlText: string): ParsedHtmlBook {
