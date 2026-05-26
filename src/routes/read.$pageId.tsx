@@ -9,6 +9,7 @@ import { TTSControls } from "@/components/TTSControls";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useReaderProtection } from "@/hooks/use-reader-protection";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/read/$pageId")({
   head: () => ({ meta: [{ title: "읽기 — 섭리 웹북" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -21,6 +22,7 @@ type PageDetail = {
 };
 
 function ReaderPage() {
+  const t = useT();
   const { pageId } = Route.useParams();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -67,9 +69,9 @@ function ReaderPage() {
 
   const addBookmark = async () => {
     if (!user) return;
-    const note = prompt("메모(선택):") || null;
+    const note = prompt(t("read.bookmarkPrompt")) || null;
     const { error } = await supabase.from("bookmarks").insert({ user_id: user.id, page_id: pageId, note });
-    if (error) toast.error(error.message); else toast.success("북마크 저장됨");
+    if (error) toast.error(error.message); else toast.success(t("read.bookmarkSaved"));
   };
 
   // Sentence-highlighted HTML
@@ -86,7 +88,7 @@ function ReaderPage() {
     return page.content_html.replace(new RegExp(escaped, "i"), `<mark class="tts-active">${target}</mark>`);
   }, [page, activeSentence]);
 
-  if (!page) return <div className="min-h-screen bg-background p-8 text-center">불러오는 중…</div>;
+  if (!page) return <div className="min-h-screen bg-background p-8 text-center">{t("read.loading")}</div>;
 
   return (
     <div className="relative min-h-screen bg-background">
@@ -100,7 +102,7 @@ function ReaderPage() {
           <div className="hidden text-xs text-muted-foreground sm:block">
             {page.chapter.title} · p.{page.page_number}
           </div>
-          <Button size="sm" variant="ghost" onClick={addBookmark}><Bookmark className="mr-1 h-4 w-4" />북마크</Button>
+          <Button size="sm" variant="ghost" onClick={addBookmark}><Bookmark className="mr-1 h-4 w-4" />{t("read.bookmark")}</Button>
         </div>
         <div className="mx-auto max-w-4xl px-4 pb-3">
           <TTSControls html={page.content_html} lang={page.chapter.book.language} onSentenceChange={setActiveSentence} />
@@ -115,10 +117,10 @@ function ReaderPage() {
         />
         <div className="mt-12 flex items-center justify-between">
           {prev ? (
-            <Link to="/read/$pageId" params={{ pageId: prev.id }}><Button variant="outline"><ChevronLeft className="mr-1 h-4 w-4" />이전</Button></Link>
+            <Link to="/read/$pageId" params={{ pageId: prev.id }}><Button variant="outline"><ChevronLeft className="mr-1 h-4 w-4" />{t("read.prev")}</Button></Link>
           ) : <div />}
           {next && (
-            <Link to="/read/$pageId" params={{ pageId: next.id }}><Button>다음<ChevronRight className="ml-1 h-4 w-4" /></Button></Link>
+            <Link to="/read/$pageId" params={{ pageId: next.id }}><Button>{t("read.next")}<ChevronRight className="ml-1 h-4 w-4" /></Button></Link>
           )}
         </div>
       </main>
