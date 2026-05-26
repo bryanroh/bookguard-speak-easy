@@ -320,7 +320,7 @@ function AdminPage() {
           </div>
 
           <ul className="divide-y divide-border">
-            {books.map((b) => {
+            {sortedBooks.map((b) => {
               const open = openId === b.id;
               const groups = pagesByBook[b.id] ?? [];
               const totalPages = groups.reduce((n, g) => n + g.pages.length, 0);
