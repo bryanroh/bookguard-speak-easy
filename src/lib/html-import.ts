@@ -79,7 +79,15 @@ function sanitizeInlineStyles(root: HTMLElement) {
       if (/font-size\s*:\s*0(pt|px|em|rem)?\b/.test(low)) return false;
       if (/opacity\s*:\s*0(\.0+)?\b/.test(low)) return false;
       if (/color\s*:\s*(#fff(fff)?|white|transparent|rgba?\(\s*255\s*,\s*255\s*,\s*255)/.test(low)) return false;
-      if (/position\s*:\s*(absolute|fixed)/.test(low)) return false;
+      if (/position\s*:\s*(absolute|fixed|relative)/.test(low)) return false;
+      // HWP/Word per-line layout — strip so text flows normally
+      if (/^(left|top|right|bottom)\s*:/.test(low)) return false;
+      if (/^(width|height|min-height|max-height|min-width|max-width)\s*:/.test(low)) return false;
+      if (/^line-height\s*:/.test(low)) return false;
+      if (/^white-space\s*:\s*nowrap/.test(low)) return false;
+      if (/^font-family\s*:/.test(low)) return false;
+      if (/^float\s*:/.test(low)) return false;
+      if (/^transform\s*:/.test(low)) return false;
       if (/background(-color)?\s*:\s*(#000|black|rgb\(\s*0\s*,\s*0\s*,\s*0)/.test(low)) return false;
       return true;
     }).join("; ");
