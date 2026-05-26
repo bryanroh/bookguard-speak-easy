@@ -1,37 +1,30 @@
-import { Globe, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useI18n, LANGS, type Lang } from "@/lib/i18n";
 
 export function LanguageSwitcher() {
   const { lang, setLang } = useI18n();
-  const current = LANGS.find((l) => l.code === lang);
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" aria-label="Language">
-          <Globe className="mr-1 h-4 w-4" />
-          <span className="hidden sm:inline">{current?.native ?? "한국어"}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[160px]">
-        {LANGS.map((l) => (
-          <DropdownMenuItem
+    <div className="flex flex-wrap items-center gap-1 rounded-md border border-border bg-muted/30 p-1">
+      {LANGS.map((l) => {
+        const active = l.code === lang;
+        return (
+          <Button
             key={l.code}
+            variant={active ? "default" : "ghost"}
+            size="sm"
             onClick={() => setLang(l.code as Lang)}
-            className="flex items-center justify-between"
+            aria-pressed={active}
+            className={
+              "h-7 px-2 text-xs " +
+              (active ? "" : "text-muted-foreground hover:text-foreground")
+            }
+            title={l.label}
           >
-            <span>{l.native}</span>
-            {l.code === lang && <Check className="h-4 w-4 text-primary" />}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+            {l.native}
+          </Button>
+        );
+      })}
+    </div>
   );
 }
