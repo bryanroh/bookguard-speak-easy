@@ -304,21 +304,42 @@ function AdminPage() {
         </div>
 
         <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
-          <div className="mr-auto inline-flex overflow-hidden rounded-md border border-border">
-            <button
-              type="button"
-              onClick={() => setSortMode("date")}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "date" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
-            >
-              날짜순
-            </button>
-            <button
-              type="button"
-              onClick={() => setSortMode("title")}
-              className={`border-l border-border px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "title" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
-            >
-              제목/목차순
-            </button>
+          <div className="mr-auto flex flex-wrap items-center gap-2">
+            <div className="inline-flex overflow-hidden rounded-md border border-border">
+              <button
+                type="button"
+                onClick={() => setSortMode("lecture")}
+                className={`px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "lecture" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+              >
+                강의순
+              </button>
+              <button
+                type="button"
+                onClick={() => setSortMode("title")}
+                className={`border-l border-border px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "title" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+              >
+                제목순
+              </button>
+              <button
+                type="button"
+                onClick={() => setSortMode("date")}
+                className={`border-l border-border px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "date" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+              >
+                날짜순
+              </button>
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="제목으로 검색…"
+              className="h-8 w-56 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/40"
+            />
+            {searchQuery && (
+              <span className="text-xs text-muted-foreground">
+                {sortedBooks.length}건
+              </span>
+            )}
           </div>
           <input
             ref={fileInputRef}
