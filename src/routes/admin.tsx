@@ -82,6 +82,33 @@ function AdminPage() {
     setBooks((prev) => prev.map((x) => (x.id === b.id ? { ...x, title: next } : x)));
   };
 
+  const startEditDesc = (b: Book) => {
+    setEditingDescId(b.id);
+    setDescDraft(b.description ?? "");
+  };
+  const commitDesc = async (b: Book) => {
+    const next = descDraft.trim();
+    setEditingDescId(null);
+    if (next === (b.description ?? "")) {
+      setDescDraft("");
+      return;
+    }
+    setSavingDescId(b.id);
+    const { error } = await supabase
+      .from("books")
+      .update({ description: next || null })
+      .eq("id", b.id);
+    setSavingDescId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("설명 저장됨");
+    setBooks((prev) =>
+      prev.map((x) => (x.id === b.id ? { ...x, description: next || null } : x)),
+    );
+  };
+
   useEffect(() => {
     if (!loading) {
       if (!user) navigate({ to: "/login" });
