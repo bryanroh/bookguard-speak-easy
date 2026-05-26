@@ -4,6 +4,7 @@ import { BookOpen, Sparkles, Feather, Crown } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -17,13 +18,14 @@ export const Route = createFileRoute("/")({
 
 type BookCard = { id: string; title: string; description: string | null };
 
-const SHELVES: { key: string; title: string; icon: typeof Crown; accent: string }[] = [
-  { key: "best", title: "베스트셀러", icon: Crown, accent: "from-amber-200/30 to-amber-500/10" },
-  { key: "new", title: "새로운 말씀", icon: Sparkles, accent: "from-sky-200/30 to-sky-500/10" },
-  { key: "poem", title: "시와 만남", icon: Feather, accent: "from-rose-200/30 to-rose-500/10" },
+const SHELVES: { key: "best" | "new" | "poem"; icon: typeof Crown; accent: string }[] = [
+  { key: "best", icon: Crown, accent: "from-amber-200/30 to-amber-500/10" },
+  { key: "new", icon: Sparkles, accent: "from-sky-200/30 to-sky-500/10" },
+  { key: "poem", icon: Feather, accent: "from-rose-200/30 to-rose-500/10" },
 ];
 
 function HomePage() {
+  const t = useT();
   const [books, setBooks] = useState<BookCard[]>([]);
   useEffect(() => {
     supabase
@@ -44,14 +46,14 @@ function HomePage() {
       <main>
         <section className="mx-auto max-w-4xl px-4 py-24 text-center">
           <h1 className="font-serif text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
-            섭리 신학 <span className="text-primary">e-BOOK</span>
+            섭리 신학 <span className="text-primary">{t("brand.suffix")}</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-            회원 전용 디지털 도서관에 오신 것을 환영합니다.
+            {t("home.subtitle")}
           </p>
           <div className="mt-8 flex justify-center gap-3">
-            <Link to="/library"><Button size="lg"><BookOpen className="mr-2 h-4 w-4" />도서관 입장</Button></Link>
-            <Link to="/login"><Button size="lg" variant="outline">로그인 / 가입</Button></Link>
+            <Link to="/library"><Button size="lg"><BookOpen className="mr-2 h-4 w-4" />{t("home.enterLibrary")}</Button></Link>
+            <Link to="/login"><Button size="lg" variant="outline">{t("home.loginSignup")}</Button></Link>
           </div>
         </section>
 
@@ -64,10 +66,10 @@ function HomePage() {
                 <div className="mb-5 flex items-baseline justify-between">
                   <h2 className="flex items-center gap-2 font-serif text-2xl font-semibold text-foreground">
                     <Icon className="h-5 w-5 text-primary" />
-                    {shelf.title}
+                    {t(`home.shelf.${shelf.key}`)}
                   </h2>
                   <Link to="/library" className="text-sm text-muted-foreground hover:text-primary">
-                    더보기 →
+                    {t("home.more")}
                   </Link>
                 </div>
 
@@ -90,7 +92,8 @@ function HomePage() {
 }
 
 function BookSpine({ book }: { book?: BookCard }) {
-  const title = book?.title ?? "준비 중";
+  const t = useT();
+  const title = book?.title ?? t("home.comingSoon");
   const inner = (
     <div className="group relative mx-auto h-48 w-32 [perspective:800px]">
       <div

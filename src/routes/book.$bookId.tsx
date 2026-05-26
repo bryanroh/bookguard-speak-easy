@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/book/$bookId")({
   head: () => ({ meta: [{ title: "책 — 섭리 신학 e-BOOK" }] }),
@@ -16,6 +17,7 @@ type Chapter = { id: string; title: string; order_index: number };
 type PageRow = { id: string; chapter_id: string; page_number: number };
 
 function BookPage() {
+  const t = useT();
   const { bookId } = Route.useParams();
   const { user, isMember, loading } = useAuth();
   const navigate = useNavigate();
@@ -44,7 +46,7 @@ function BookPage() {
     })();
   }, [user, bookId]);
 
-  if (!book) return <div className="min-h-screen bg-background"><SiteHeader /><p className="p-8 text-center">불러오는 중…</p></div>;
+  if (!book) return <div className="min-h-screen bg-background"><SiteHeader /><p className="p-8 text-center">{t("book.loading")}</p></div>;
 
   const firstPageId = chapters.length > 0 ? pagesByChapter[chapters[0].id]?.[0]?.id : null;
   const resumeId = lastPageId || firstPageId;
@@ -55,7 +57,7 @@ function BookPage() {
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 py-10">
         <Link to="/library" className="mb-6 inline-flex items-center text-sm text-muted-foreground hover:text-primary">
-          <ArrowLeft className="mr-1 h-4 w-4" />도서관
+          <ArrowLeft className="mr-1 h-4 w-4" />{t("book.back")}
         </Link>
 
         <div className="book-stage">
@@ -75,8 +77,8 @@ function BookPage() {
               <div className="book-ornament">✦</div>
 
               <div className="mt-10 space-y-3 text-center text-sm" style={{ color: "#6b4118", fontFamily: "var(--font-serif)" }}>
-                <div>전체 {chapters.length}장 · {totalPages} 페이지</div>
-                <div className="italic">— 섭리 신학 e-BOOK —</div>
+                <div>{t("book.totals", { chapters: chapters.length, pages: totalPages })}</div>
+                <div className="italic">{t("book.tagline")}</div>
               </div>
 
               {isMember ? (
@@ -84,7 +86,7 @@ function BookPage() {
                   <div className="mt-10 flex justify-center">
                     <Link to="/read/$pageId" params={{ pageId: resumeId }}>
                       <Button size="lg" className="shadow-lg">
-                        {lastPageId ? "이어서 읽기" : "읽기 시작"}
+                        {lastPageId ? t("book.continue") : t("book.start")}
                         <ChevronRight className="ml-1 h-4 w-4" />
                       </Button>
                     </Link>
@@ -92,22 +94,22 @@ function BookPage() {
                 )
               ) : (
                 <div className="mt-10 rounded-md border border-amber-300/60 bg-amber-50/70 p-4 text-center text-sm text-amber-900">
-                  본문 읽기는 <strong>정회원</strong> 전용입니다. 관리자에게 정회원 승격을 요청해 주세요.
+                  {t("book.memberOnly")}
                 </div>
               )}
             </div>
 
             {/* Right page — table of contents */}
             <div className="book-page book-page--right">
-              <div className="book-ornament">목 차</div>
+              <div className="book-ornament">{t("book.toc")}</div>
               <div className="book-rule" />
               {!isMember ? (
                 <p className="mt-8 text-center italic" style={{ color: "#6b4118", fontFamily: "var(--font-serif)" }}>
-                  목차와 본문은 정회원만 열람할 수 있습니다.
+                  {t("book.tocMemberOnly")}
                 </p>
               ) : chapters.length === 0 ? (
                 <p className="mt-8 text-center italic" style={{ color: "#6b4118", fontFamily: "var(--font-serif)" }}>
-                  아직 챕터가 없습니다.
+                  {t("book.noChapters")}
                 </p>
               ) : (
                 <div className="mt-4 space-y-1">
@@ -120,7 +122,7 @@ function BookPage() {
                         params={firstPg ? { pageId: firstPg.id } : { bookId }}
                         className="book-toc-item"
                       >
-                        <span>제 {i + 1} 장 &nbsp; {c.title}</span>
+                        <span>{t("book.chapter", { n: i + 1 })} &nbsp; {c.title}</span>
                         <span className="leader" />
                         <span className="book-toc-page">{firstPg?.page_number ?? "—"}</span>
                       </Link>

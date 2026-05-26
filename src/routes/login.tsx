@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "로그인 — 섭리 웹북" }] }),
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const t = useT();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +34,7 @@ function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("로그인 성공");
+    toast.success(t("login.success"));
     navigate({ to: "/library" });
   };
 
@@ -47,7 +49,7 @@ function LoginPage() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("가입 완료! 이메일을 확인해 주세요.");
+    toast.success(t("login.signupComplete"));
   };
 
   const google = async () => {
@@ -64,28 +66,28 @@ function LoginPage() {
         <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
           <Tabs defaultValue="signin">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">로그인</TabsTrigger>
-              <TabsTrigger value="signup">회원가입</TabsTrigger>
+              <TabsTrigger value="signin">{t("login.signIn")}</TabsTrigger>
+              <TabsTrigger value="signup">{t("login.signUp")}</TabsTrigger>
             </TabsList>
             <TabsContent value="signin" className="space-y-3 pt-4">
-              <div><Label>이메일</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-              <div><Label>비밀번호</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-              <Button className="w-full" onClick={signIn} disabled={loading}>로그인</Button>
+              <div><Label>{t("login.email")}</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+              <div><Label>{t("login.password")}</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+              <Button className="w-full" onClick={signIn} disabled={loading}>{t("login.signIn")}</Button>
             </TabsContent>
             <TabsContent value="signup" className="space-y-3 pt-4">
-              <div><Label>표시 이름</Label><Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="이름" /></div>
-              <div><Label>이메일</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-              <div><Label>비밀번호 (6자 이상)</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-              <Button className="w-full" onClick={signUp} disabled={loading}>가입</Button>
+              <div><Label>{t("login.displayName")}</Label><Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t("login.namePlaceholder")} /></div>
+              <div><Label>{t("login.email")}</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+              <div><Label>{t("login.passwordMin")}</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+              <Button className="w-full" onClick={signUp} disabled={loading}>{t("login.signUp")}</Button>
             </TabsContent>
           </Tabs>
           <div className="my-4 flex items-center gap-2 text-xs text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /><span>또는</span><div className="h-px flex-1 bg-border" />
+            <div className="h-px flex-1 bg-border" /><span>{t("login.or")}</span><div className="h-px flex-1 bg-border" />
           </div>
-          <Button variant="outline" className="w-full" onClick={google}>Google로 계속</Button>
+          <Button variant="outline" className="w-full" onClick={google}>{t("login.google")}</Button>
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            계정이 없으신가요?{" "}
-            <Link to="/signup" className="font-medium text-primary hover:underline">회원가입</Link>
+            {t("login.noAccount")}{" "}
+            <Link to="/signup" className="font-medium text-primary hover:underline">{t("login.signUp")}</Link>
           </p>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useAuth } from "@/hooks/use-auth";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/library")({
   head: () => ({ meta: [{ title: "도서관 — 섭리 웹북" }] }),
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/library")({
 type Book = { id: string; title: string; description: string | null; cover_url: string | null; language: string };
 
 function LibraryPage() {
+  const t = useT();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [books, setBooks] = useState<Book[]>([]);
@@ -32,14 +34,14 @@ function LibraryPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="font-serif text-3xl font-bold">도서관</h1>
-        <p className="mt-1 text-sm text-muted-foreground">읽으실 책을 선택하세요.</p>
+        <h1 className="font-serif text-3xl font-bold">{t("library.title")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("library.subtitle")}</p>
         {busy ? (
-          <p className="mt-8 text-muted-foreground">불러오는 중…</p>
+          <p className="mt-8 text-muted-foreground">{t("library.loading")}</p>
         ) : books.length === 0 ? (
           <div className="mt-12 rounded-lg border border-dashed border-border p-12 text-center">
             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
-            <p className="mt-3 text-muted-foreground">아직 게시된 책이 없습니다.</p>
+            <p className="mt-3 text-muted-foreground">{t("library.empty")}</p>
           </div>
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
