@@ -268,7 +268,23 @@ function AdminPage() {
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap justify-end gap-2">
+        <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+          <div className="mr-auto inline-flex overflow-hidden rounded-md border border-border">
+            <button
+              type="button"
+              onClick={() => setSortMode("date")}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "date" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+            >
+              날짜순
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortMode("title")}
+              className={`border-l border-border px-3 py-1.5 text-xs font-medium transition-colors ${sortMode === "title" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+            >
+              제목/목차순
+            </button>
+          </div>
           <input
             ref={fileInputRef}
             type="file"
