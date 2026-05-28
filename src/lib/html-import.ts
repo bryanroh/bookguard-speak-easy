@@ -154,6 +154,44 @@ function flattenTopBlocks(body: HTMLElement): HTMLElement[] {
   return blocks;
 }
 
+/** Detect short paragraphs that look like a page-number footer:
+ * "1", "- 1 -", "·1·", "p. 1", "1 / 200" ...
+ * Returns the page number if it looks like one, else null. */
+function pageNumberOf(el: Element): number | null {
+  const txt = (el.textContent || "").trim();
+  if (!txt || txt.length > 12) return null;
+  // 1 / 200  → first number
+  let m = txt.match(/^\s*[-–—·•]?\s*(?:p\.?\s*)?(\d{1,4})\s*(?:\/\s*\d{1,4})?\s*[-–—·•]?\s*$/i);
+  if (!m) return null;
+  // ignore elements with images / many children (likely real content)
+  if (el.querySelector("img,table,ul,ol")) return null;
+  const n = parseInt(m[1], 10);
+  if (!isFinite(n) || n < 1 || n > 2000) return null;
+  return n;
+}
+
+/** Find indices of blocks that form an increasing page-number sequence
+ * (≥3 hits, each strictly greater than the previous). Returns empty if not found. */
+function findPageNumberBreaks(blocks: HTMLElement[]): Set<number> {
+  const candidates: { idx: number; n: number }[] = [];
+  blocks.forEach((el, idx) => {
+    const n = pageNumberOf(el);
+    if (n !== null) candidates.push({ idx, n });
+  });
+  if (candidates.length < 3) return new Set();
+  // Keep the longest strictly-increasing run
+  const kept: typeof candidates = [];
+  let last = -Infinity;
+  for (const c of candidates) {
+    if (c.n > last && c.n - last <= 5) {
+      kept.push(c);
+      last = c.n;
+    }
+  }
+  if (kept.length < 3) return new Set();
+  return new Set(kept.map((c) => c.idx));
+}
+
 function splitIntoPages(body: HTMLElement): string[] {
   const blocks = flattenTopBlocks(body);
   const pages: string[][] = [[]];
@@ -167,7 +205,25 @@ function splitIntoPages(body: HTMLElement): string[] {
     pages[pages.length - 1].push(el.outerHTML);
   }
   let result = pages.map((c) => c.join("\n")).filter((p) => p.trim().length > 0);
-  // Fallback: still one page but lots of text → chunk by character count
+
+  // Fallback A: still one page → try page-number footer detection
+  if (result.length <= 1) {
+    const breaks = findPageNumberBreaks(blocks);
+    if (breaks.size >= 2) {
+      const chunks: string[][] = [[]];
+      blocks.forEach((el, idx) => {
+        if (breaks.has(idx)) {
+          // page number marks END of current page → drop it, start new page
+          if (chunks[chunks.length - 1].length > 0) chunks.push([]);
+          return;
+        }
+        chunks[chunks.length - 1].push(el.outerHTML);
+      });
+      result = chunks.map((c) => c.join("\n")).filter((p) => p.trim().length > 0);
+    }
+  }
+
+  // Fallback B: still one page but lots of text → chunk by character count
   if (result.length <= 1) {
     const text = body.textContent || "";
     if (text.length > 3500) {
