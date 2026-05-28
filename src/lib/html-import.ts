@@ -154,6 +154,24 @@ function flattenTopBlocks(body: HTMLElement): HTMLElement[] {
   return blocks;
 }
 
+/** HWP exports often wrap each rendered paper page in a .hpa block. */
+function isPageContainer(el: Element): boolean {
+  const cls = (typeof el.className === "string" ? el.className : "").toLowerCase();
+  if (/\b(hpa|hwp-page|pagecontainer|wordsection\d+|section\d+)\b/.test(cls)) return true;
+  const s = (el.getAttribute("style") || "").toLowerCase();
+  return el.tagName === "DIV" && /height\s*:\s*(2[6-9]\d|29[0-9]|30\d)(\.\d+)?\s*mm/.test(s);
+}
+
+function findPageContainers(blocks: HTMLElement[]): HTMLElement[] {
+  const direct = blocks.filter(isPageContainer);
+  if (direct.length >= 2) return direct;
+  if (blocks.length === 1) {
+    const nested = Array.from(blocks[0].children).filter(isPageContainer) as HTMLElement[];
+    if (nested.length >= 2) return nested;
+  }
+  return [];
+}
+
 /** Detect short paragraphs that look like a page-number footer:
  * "1", "- 1 -", "·1·", "p. 1", "1 / 200" ...
  * Returns the page number if it looks like one, else null. */
@@ -194,6 +212,9 @@ function findPageNumberBreaks(blocks: HTMLElement[]): Set<number> {
 
 function splitIntoPages(body: HTMLElement): string[] {
   const blocks = flattenTopBlocks(body);
+  const containers = findPageContainers(blocks);
+  if (containers.length >= 2) return containers.map((el) => el.outerHTML).filter((p) => p.trim());
+
   const pages: string[][] = [[]];
   for (const el of blocks) {
     if (isPageBreak(el)) {
