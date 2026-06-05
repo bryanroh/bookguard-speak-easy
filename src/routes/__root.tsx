@@ -47,10 +47,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "섭리 웹북 — 보안 디지털 도서관" },
-      { name: "description", content: "회원 전용 보안 웹북. 캡처 추적 워터마크 + 음성 읽기 지원." },
+      { title: "Institute for Providence Theology — 섭리신학연구소" },
+      {
+        name: "description",
+        content:
+          "Institute for Providence Theology (섭리신학연구소) — an independent academic research institute publishing scholarly digital works in theology, philosophy, and the humanities.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Institute for Providence Theology" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "EducationalOrganization",
+          name: "Institute for Providence Theology",
+          alternateName: ["섭리신학연구소", "Providence Theology Research Institute"],
+          description:
+            "An independent academic research institute publishing scholarly digital works in the fields of theology, philosophy, and the humanities.",
+          url: "https://bookguard-speak-easy.lovable.app",
+          knowsAbout: ["Theology", "Philosophy", "Humanities", "Religious Studies", "Academic Publishing"],
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

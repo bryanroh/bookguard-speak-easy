@@ -9,8 +9,22 @@ import { useT } from "@/lib/i18n";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "섭리 신학 e-BOOK" },
-      { name: "description", content: "회원 전용 디지털 도서관." },
+      { title: "Institute for Providence Theology — 섭리신학연구소" },
+      {
+        name: "description",
+        content:
+          "Independent academic research institute publishing scholarly digital works in theology, philosophy, and the humanities.",
+      },
+      { property: "og:title", content: "Institute for Providence Theology" },
+      {
+        property: "og:description",
+        content:
+          "Scholarly digital publications in theology, philosophy, and the humanities.",
+      },
+      { property: "og:url", content: "https://bookguard-speak-easy.lovable.app/" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://bookguard-speak-easy.lovable.app/" },
     ],
   }),
   component: HomePage,
@@ -45,15 +59,22 @@ function HomePage() {
       <SiteHeader />
       <main>
         <section className="mx-auto max-w-4xl px-4 py-24 text-center">
+          <p className="mb-3 text-xs font-medium uppercase tracking-[0.28em] text-muted-foreground">
+            Institute for Providence Theology
+          </p>
           <h1 className="font-serif text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
-            섭리 신학 <span className="text-primary">{t("brand.suffix")}</span>
+            섭리신학<span className="text-primary">연구소</span>
           </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm italic text-muted-foreground">
+            An independent academic research institute · Theology · Philosophy · Humanities
+          </p>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
             {t("home.subtitle")}
           </p>
-          <div className="mt-8 flex justify-center gap-3">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/library"><Button size="lg"><BookOpen className="mr-2 h-4 w-4" />{t("home.enterLibrary")}</Button></Link>
-            <Link to="/login"><Button size="lg" variant="outline">{t("home.loginSignup")}</Button></Link>
+            <Link to="/about"><Button size="lg" variant="outline">{t("nav.about")}</Button></Link>
+            <Link to="/login"><Button size="lg" variant="ghost">{t("home.loginSignup")}</Button></Link>
           </div>
         </section>
 
@@ -87,6 +108,11 @@ function HomePage() {
           })}
         </section>
       </main>
+      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
+        © {new Date().getFullYear()} Institute for Providence Theology · 섭리신학연구소
+        <br />
+        Independent Academic Research Institute — Theology · Philosophy · Humanities
+      </footer>
     </div>
   );
 }
