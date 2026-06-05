@@ -19,9 +19,16 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
-        <Link to="/" className="flex items-center gap-2 font-serif text-lg font-semibold tracking-wide">
+        <Link to="/" className="flex items-center gap-2 font-serif leading-tight">
           <BookOpen className="h-5 w-5 text-primary" />
-          섭리 신학 <span className="text-primary">{t("brand.suffix")}</span>
+          <span className="flex flex-col">
+            <span className="text-base font-semibold tracking-wide sm:text-lg">
+              섭리신학연구소
+            </span>
+            <span className="hidden text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground sm:block">
+              Institute for Providence Theology
+            </span>
+          </span>
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
