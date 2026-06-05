@@ -108,6 +108,11 @@ function HomePage() {
           })}
         </section>
       </main>
+      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
+        © {new Date().getFullYear()} Institute for Providence Theology · 섭리신학연구소
+        <br />
+        Independent Academic Research Institute — Theology · Philosophy · Humanities
+      </footer>
     </div>
   );
 }
