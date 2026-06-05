@@ -41,6 +41,19 @@ export function SiteHeader() {
             </Link>
           )}
 
+          <Link to="/publications">
+            <Button variant="ghost" size="sm">
+              <span className="hidden md:inline">{t("nav.publications")}</span>
+              <span className="md:hidden">{t("nav.publications")}</span>
+            </Button>
+          </Link>
+
+          <Link to="/editorial-board">
+            <Button variant="ghost" size="sm" className="hidden md:inline-flex">
+              <span>{t("nav.editorial")}</span>
+            </Button>
+          </Link>
+
           <Link to="/about">
             <Button variant="ghost" size="sm">
               <span>{t("nav.about")}</span>

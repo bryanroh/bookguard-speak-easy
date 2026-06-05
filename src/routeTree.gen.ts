@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as PublicationsRouteImport } from './routes/publications'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as EditorialBoardRouteImport } from './routes/editorial-board'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -26,6 +28,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicationsRoute = PublicationsRouteImport.update({
+  id: '/publications',
+  path: '/publications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -34,6 +41,11 @@ const LoginRoute = LoginRouteImport.update({
 const LibraryRoute = LibraryRouteImport.update({
   id: '/library',
   path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditorialBoardRoute = EditorialBoardRouteImport.update({
+  id: '/editorial-board',
+  path: '/editorial-board',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -81,8 +93,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/editorial-board': typeof EditorialBoardRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/publications': typeof PublicationsRoute
   '/signup': typeof SignupRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
@@ -94,8 +108,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/editorial-board': typeof EditorialBoardRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/publications': typeof PublicationsRoute
   '/signup': typeof SignupRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
@@ -108,8 +124,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/editorial-board': typeof EditorialBoardRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/publications': typeof PublicationsRoute
   '/signup': typeof SignupRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
@@ -123,8 +141,10 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/editorial-board'
     | '/library'
     | '/login'
+    | '/publications'
     | '/signup'
     | '/admin/users'
     | '/book/$bookId'
@@ -136,8 +156,10 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/editorial-board'
     | '/library'
     | '/login'
+    | '/publications'
     | '/signup'
     | '/admin/users'
     | '/book/$bookId'
@@ -149,8 +171,10 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/editorial-board'
     | '/library'
     | '/login'
+    | '/publications'
     | '/signup'
     | '/admin/users'
     | '/book/$bookId'
@@ -163,8 +187,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
+  EditorialBoardRoute: typeof EditorialBoardRoute
   LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
+  PublicationsRoute: typeof PublicationsRoute
   SignupRoute: typeof SignupRoute
   BookBookIdRoute: typeof BookBookIdRoute
   ReadPageIdRoute: typeof ReadPageIdRoute
@@ -179,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/publications': {
+      id: '/publications'
+      path: '/publications'
+      fullPath: '/publications'
+      preLoaderRoute: typeof PublicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -191,6 +224,13 @@ declare module '@tanstack/react-router' {
       path: '/library'
       fullPath: '/library'
       preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/editorial-board': {
+      id: '/editorial-board'
+      path: '/editorial-board'
+      fullPath: '/editorial-board'
+      preLoaderRoute: typeof EditorialBoardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -270,8 +310,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
+  EditorialBoardRoute: EditorialBoardRoute,
   LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
+  PublicationsRoute: PublicationsRoute,
   SignupRoute: SignupRoute,
   BookBookIdRoute: BookBookIdRoute,
   ReadPageIdRoute: ReadPageIdRoute,
