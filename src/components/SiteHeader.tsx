@@ -41,6 +41,12 @@ export function SiteHeader() {
             </Link>
           )}
 
+          <Link to="/about">
+            <Button variant="ghost" size="sm">
+              <span>{t("nav.about")}</span>
+            </Button>
+          </Link>
+
           {/* 관리자 전용 메뉴 — 시각적으로 강조 */}
           {isAdmin && (
             <div className="flex items-center gap-1 rounded-md border border-primary/30 bg-primary/5 px-1 py-0.5">
