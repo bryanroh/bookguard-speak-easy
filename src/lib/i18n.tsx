@@ -22,6 +22,7 @@ const dict: Record<Lang, Dict> = {
     "nav.signOut": "로그아웃",
     "nav.signIn": "로그인",
     "nav.language": "언어",
+    "nav.about": "소개",
 
     "home.subtitle": "회원 전용 디지털 도서관에 오신 것을 환영합니다.",
     "home.enterLibrary": "도서관 입장",
@@ -82,6 +83,7 @@ const dict: Record<Lang, Dict> = {
     "nav.signOut": "Sign out",
     "nav.signIn": "Sign in",
     "nav.language": "Language",
+    "nav.about": "About",
 
     "home.subtitle": "Welcome to the members-only digital library.",
     "home.enterLibrary": "Enter Library",
@@ -142,6 +144,7 @@ const dict: Record<Lang, Dict> = {
     "nav.signOut": "ログアウト",
     "nav.signIn": "ログイン",
     "nav.language": "言語",
+    "nav.about": "紹介",
 
     "home.subtitle": "会員専用デジタル図書館へようこそ。",
     "home.enterLibrary": "図書館へ",
@@ -202,6 +205,7 @@ const dict: Record<Lang, Dict> = {
     "nav.signOut": "退出",
     "nav.signIn": "登录",
     "nav.language": "语言",
+    "nav.about": "关于",
 
     "home.subtitle": "欢迎来到会员专属数字图书馆。",
     "home.enterLibrary": "进入图书馆",
@@ -262,6 +266,7 @@ const dict: Record<Lang, Dict> = {
     "nav.signOut": "Cerrar sesión",
     "nav.signIn": "Iniciar sesión",
     "nav.language": "Idioma",
+    "nav.about": "Acerca",
 
     "home.subtitle": "Bienvenido a la biblioteca digital exclusiva para miembros.",
     "home.enterLibrary": "Entrar a la biblioteca",
@@ -322,6 +327,7 @@ const dict: Record<Lang, Dict> = {
     "nav.signOut": "Déconnexion",
     "nav.signIn": "Connexion",
     "nav.language": "Langue",
+    "nav.about": "À propos",
 
     "home.subtitle": "Bienvenue dans la bibliothèque numérique réservée aux membres.",
     "home.enterLibrary": "Entrer dans la bibliothèque",
