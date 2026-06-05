@@ -43,39 +43,6 @@ type BookCard = {
   language: string;
 };
 
-const DISCIPLINES = [
-  {
-    key: "theology",
-    label: "Theology",
-    icon: ScrollText,
-    desc: "Systematic, biblical, and historical theology.",
-  },
-  {
-    key: "philosophy",
-    label: "Philosophy of Religion",
-    icon: GraduationCap,
-    desc: "Metaphysics, epistemology, ethics.",
-  },
-  {
-    key: "comparative",
-    label: "Comparative Religion",
-    icon: Globe2,
-    desc: "Traditions in cross-cultural perspective.",
-  },
-  {
-    key: "humanities",
-    label: "Humanities",
-    icon: BookOpen,
-    desc: "History of ideas, literature, culture.",
-  },
-];
-
-const FORTHCOMING = [
-  { title: "On Providence: A Systematic Re-examination", series: "SIP 01", expected: "2026" },
-  { title: "Reading the Tradition: Essays in Philosophical Theology", series: "EPT 01", expected: "2026" },
-  { title: "Critical Edition: Selected Sermons", series: "TC 01", expected: "2026" },
-];
-
 function HomePage() {
   const t = useT();
   const [books, setBooks] = useState<BookCard[]>([]);
@@ -90,65 +57,74 @@ function HomePage() {
       .then(({ data }) => setBooks(data ?? []));
   }, []);
 
+  const disciplines = [
+    { key: "theology", icon: ScrollText },
+    { key: "philosophy", icon: GraduationCap },
+    { key: "comparative", icon: Globe2 },
+    { key: "humanities", icon: BookOpen },
+  ];
+
+  const forthcoming = [
+    { titleKey: "forth.t1", series: "SIP 01", year: "2026" },
+    { titleKey: "forth.t2", series: "EPT 01", year: "2026" },
+    { titleKey: "forth.t3", series: "TC 01", year: "2026" },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main>
-        {/* HERO — academic press style */}
+        {/* HERO */}
         <section className="border-b border-border">
           <div className="mx-auto grid max-w-6xl gap-10 px-4 py-20 lg:grid-cols-[1.4fr_1fr] lg:py-24">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.28em] text-muted-foreground">
-                Institute for Providence Theology
+                {t("home.hero.eyebrow")}
               </p>
-              <h1 className="mt-4 font-serif text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
-                Scholarly works in
+              <h1 className="mt-4 font-serif text-5xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
+                {t("home.hero.title1")}
                 <br />
-                <span className="text-primary">theology, philosophy,</span>
+                <span className="text-primary">{t("home.hero.title2")}</span>
                 <br />
-                and the humanities.
+                {t("home.hero.title3")}
               </h1>
               <p className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
-                An independent academic research institute publishing peer-reviewed digital
-                monographs, essays, and critical editions for scholars and serious readers.
+                {t("home.hero.subtitle")}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link to="/publications">
                   <Button size="lg">
                     <LibraryIcon className="mr-2 h-4 w-4" />
-                    Browse Publications
+                    {t("home.cta.browse")}
                   </Button>
                 </Link>
                 <Link to="/about">
                   <Button size="lg" variant="outline">
-                    About the Institute
+                    {t("home.cta.about")}
                   </Button>
                 </Link>
               </div>
 
-              {/* stats strip */}
               <dl className="mt-10 flex flex-wrap gap-x-10 gap-y-4 border-t border-border pt-6">
-                <Stat label="Disciplines" value="4" />
-                <Stat label="Series" value="3" />
-                <Stat label="Languages" value="6" />
-                <Stat label="Forthcoming" value={String(FORTHCOMING.length)} />
+                <Stat label={t("stat.disciplines")} value="4" />
+                <Stat label={t("stat.series")} value="3" />
+                <Stat label={t("stat.languages")} value="6" />
+                <Stat label={t("stat.forthcoming")} value={String(forthcoming.length)} />
               </dl>
             </div>
 
-            {/* Editorial quote / colophon block */}
             <aside className="relative flex flex-col justify-between rounded-xl border border-border bg-card p-8">
               <div>
                 <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
-                  Editorial Statement
+                  {t("home.editorial.eyebrow")}
                 </p>
                 <blockquote className="mt-4 font-serif text-lg leading-relaxed text-foreground">
-                  "Scholarship in the long tradition of academic theology — rigorous,
-                  text-centred, and addressed to the educated reader."
+                  {t("home.editorial.quote")}
                 </blockquote>
               </div>
               <div className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
-                <p className="font-medium uppercase tracking-wider">섭리신학연구소</p>
-                <p className="mt-1">Independent · Academic · Non-denominational</p>
+                <p className="font-medium uppercase tracking-wider">{t("inst.name")}</p>
+                <p className="mt-1">{t("home.editorial.tag1")}</p>
               </div>
             </aside>
           </div>
@@ -159,19 +135,19 @@ function HomePage() {
           <div className="mb-8 flex items-end justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.28em] text-muted-foreground">
-                Subject Areas
+                {t("disc.eyebrow")}
               </p>
-              <h2 className="mt-2 font-serif text-3xl font-semibold">Browse by Discipline</h2>
+              <h2 className="mt-2 font-serif text-3xl font-semibold">{t("disc.title")}</h2>
             </div>
             <Link
               to="/publications"
               className="hidden text-sm text-muted-foreground hover:text-primary sm:inline-flex sm:items-center sm:gap-1"
             >
-              All publications <ArrowRight className="h-3.5 w-3.5" />
+              {t("disc.allPubs")} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {DISCIPLINES.map((d) => {
+            {disciplines.map((d) => {
               const Icon = d.icon;
               return (
                 <Link
@@ -181,9 +157,9 @@ function HomePage() {
                 >
                   <Icon className="h-6 w-6 text-primary" />
                   <h3 className="mt-4 font-serif text-lg font-semibold group-hover:text-primary">
-                    {d.label}
+                    {t(`disc.${d.key}`)}
                   </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{d.desc}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{t(`disc.${d.key}Desc`)}</p>
                 </Link>
               );
             })}
@@ -196,9 +172,9 @@ function HomePage() {
             <div className="mb-8 flex items-end justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.28em] text-muted-foreground">
-                  Catalogue
+                  {t("recent.eyebrow")}
                 </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold">Recently Published</h2>
+                <h2 className="mt-2 font-serif text-3xl font-semibold">{t("recent.title")}</h2>
               </div>
               <Link to="/library" className="text-sm text-muted-foreground hover:text-primary">
                 {t("home.more")}
@@ -206,9 +182,10 @@ function HomePage() {
             </div>
 
             {books.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border bg-background p-10 text-center text-sm text-muted-foreground">
-                Inaugural volumes are in editorial preparation. See <em>Forthcoming</em> below.
-              </div>
+              <div
+                className="rounded-lg border border-dashed border-border bg-background p-10 text-center text-sm text-muted-foreground"
+                dangerouslySetInnerHTML={{ __html: t("recent.empty") }}
+              />
             ) : (
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {books.map((b) => (
@@ -219,7 +196,8 @@ function HomePage() {
                     className="group rounded-lg border border-border bg-background p-6 transition hover:border-primary hover:shadow-md"
                   >
                     <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                      Monograph · {b.language.toUpperCase()} · {new Date(b.created_at).getFullYear()}
+                      {t("recent.kind")} · {b.language.toUpperCase()} ·{" "}
+                      {new Date(b.created_at).getFullYear()}
                     </p>
                     <h3 className="mt-2 font-serif text-lg font-semibold leading-snug group-hover:text-primary">
                       {b.title}
@@ -240,35 +218,35 @@ function HomePage() {
         <section className="mx-auto max-w-6xl px-4 py-16">
           <div className="mb-8">
             <p className="text-xs font-medium uppercase tracking-[0.28em] text-muted-foreground">
-              In Preparation
+              {t("forth.eyebrow")}
             </p>
-            <h2 className="mt-2 font-serif text-3xl font-semibold">Forthcoming Volumes</h2>
+            <h2 className="mt-2 font-serif text-3xl font-semibold">{t("forth.title")}</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FORTHCOMING.map((f) => (
+            {forthcoming.map((f) => (
               <div
-                key={f.title}
+                key={f.titleKey}
                 className="rounded-lg border border-dashed border-border bg-card/50 p-6"
               >
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>Forthcoming {f.expected}</span>
+                  <span>
+                    {t("forth.label")} {f.year}
+                  </span>
                   <span>·</span>
                   <span className="font-mono">{f.series}</span>
                 </div>
                 <h3 className="mt-3 font-serif text-base font-semibold leading-snug">
-                  {f.title}
+                  {t(f.titleKey)}
                 </h3>
-                <p className="mt-2 text-xs italic text-muted-foreground">
-                  Editorial Collective, IPT
-                </p>
+                <p className="mt-2 text-xs italic text-muted-foreground">{t("forth.author")}</p>
               </div>
             ))}
           </div>
           <div className="mt-8">
             <Link to="/editorial-board">
               <Button variant="outline">
-                Editorial Board &amp; Review Policy
+                {t("forth.policyCta")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -279,33 +257,31 @@ function HomePage() {
       <footer className="border-t border-border bg-card">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-3">
           <div>
-            <p className="font-serif text-base font-semibold">Institute for Providence Theology</p>
-            <p className="mt-1 text-xs text-muted-foreground">섭리신학연구소</p>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Independent academic research institute. Theology · Philosophy · Humanities.
-            </p>
+            <p className="font-serif text-base font-semibold">{t("inst.nameEn")}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("inst.name")}</p>
+            <p className="mt-3 text-xs text-muted-foreground">{t("footer.tagline")}</p>
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Catalogue
+              {t("footer.catalogue")}
             </p>
             <ul className="mt-3 space-y-1.5 text-sm">
-              <li><Link to="/publications" className="hover:text-primary">Publications</Link></li>
-              <li><Link to="/library" className="hover:text-primary">Library</Link></li>
+              <li><Link to="/publications" className="hover:text-primary">{t("footer.publications")}</Link></li>
+              <li><Link to="/library" className="hover:text-primary">{t("footer.library")}</Link></li>
             </ul>
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Institute
+              {t("footer.institute")}
             </p>
             <ul className="mt-3 space-y-1.5 text-sm">
-              <li><Link to="/about" className="hover:text-primary">About</Link></li>
-              <li><Link to="/editorial-board" className="hover:text-primary">Editorial Board</Link></li>
+              <li><Link to="/about" className="hover:text-primary">{t("footer.about")}</Link></li>
+              <li><Link to="/editorial-board" className="hover:text-primary">{t("footer.editorial")}</Link></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-border py-5 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Institute for Providence Theology · 섭리신학연구소
+          © {new Date().getFullYear()} {t("inst.nameEn")} · {t("inst.name")}
         </div>
       </footer>
     </div>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { BookOpen, Calendar, ScrollText, GraduationCap, Globe2 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { supabase } from "@/integrations/supabase/client";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/publications")({
   head: () => ({
@@ -33,32 +34,8 @@ type Book = {
   created_at: string;
 };
 
-const DISCIPLINES = [
-  { key: "theology", label: "Theology", icon: ScrollText, desc: "Systematic, biblical, and historical theology." },
-  { key: "philosophy", label: "Philosophy of Religion", icon: GraduationCap, desc: "Metaphysics, epistemology, and ethics." },
-  { key: "comparative", label: "Comparative Religion", icon: Globe2, desc: "Traditions in cross-cultural perspective." },
-  { key: "humanities", label: "Humanities", icon: BookOpen, desc: "History of ideas, literature, and culture." },
-];
-
-const SERIES = [
-  {
-    name: "Studies in Providence",
-    code: "SIP",
-    desc: "Monograph series on the doctrine and history of providence.",
-  },
-  {
-    name: "Essays in Philosophical Theology",
-    code: "EPT",
-    desc: "Short-form scholarly essays at the boundary of philosophy and theology.",
-  },
-  {
-    name: "Texts & Commentaries",
-    code: "TC",
-    desc: "Critical editions and commentaries on primary sources.",
-  },
-];
-
 function PublicationsPage() {
+  const t = useT();
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -74,51 +51,66 @@ function PublicationsPage() {
       });
   }, []);
 
+  const disciplines = [
+    { key: "theology", icon: ScrollText },
+    { key: "philosophy", icon: GraduationCap },
+    { key: "comparative", icon: Globe2 },
+    { key: "humanities", icon: BookOpen },
+  ];
+
+  const series = [
+    { code: "SIP", nameKey: "pub.s1", descKey: "pub.s1Desc" },
+    { code: "EPT", nameKey: "pub.s2", descKey: "pub.s2Desc" },
+    { code: "TC", nameKey: "pub.s3", descKey: "pub.s3Desc" },
+  ];
+
+  const forthcoming = [
+    { titleKey: "forth.t1", series: "SIP 01", year: "2026" },
+    { titleKey: "forth.t2", series: "EPT 01", year: "2026" },
+    { titleKey: "forth.t3", series: "TC 01", year: "2026" },
+    { titleKey: "forth.t4", series: "SIP 02", year: "2027" },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 py-12">
         <header className="border-b border-border pb-8">
           <p className="text-xs font-medium uppercase tracking-[0.28em] text-muted-foreground">
-            Catalogue
+            {t("pub.eyebrow")}
           </p>
           <h1 className="mt-3 font-serif text-4xl font-bold tracking-tight sm:text-5xl">
-            Publications
+            {t("pub.title")}
           </h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Scholarly digital monographs and essays issued by the Institute, organised by
-            discipline and series.
-          </p>
+          <p className="mt-3 max-w-2xl text-muted-foreground">{t("pub.intro")}</p>
           <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-2 text-sm">
-            <Stat label="Published volumes" value={loading ? "—" : String(books.length)} />
-            <Stat label="Series" value={String(SERIES.length)} />
-            <Stat label="Disciplines" value={String(DISCIPLINES.length)} />
-            <Stat label="Languages" value="6" />
+            <Stat label={t("stat.publishedVolumes")} value={loading ? "—" : String(books.length)} />
+            <Stat label={t("stat.series")} value={String(series.length)} />
+            <Stat label={t("stat.disciplines")} value={String(disciplines.length)} />
+            <Stat label={t("stat.languages")} value="6" />
           </dl>
         </header>
 
-        {/* Disciplines */}
         <section className="mt-12">
-          <h2 className="font-serif text-2xl font-semibold">Browse by Discipline</h2>
+          <h2 className="font-serif text-2xl font-semibold">{t("pub.browseTitle")}</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {DISCIPLINES.map((d) => {
+            {disciplines.map((d) => {
               const Icon = d.icon;
               return (
                 <div key={d.key} className="rounded-lg border border-border bg-card p-5">
                   <Icon className="h-5 w-5 text-primary" />
-                  <h3 className="mt-3 font-serif text-base font-semibold">{d.label}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{d.desc}</p>
+                  <h3 className="mt-3 font-serif text-base font-semibold">{t(`disc.${d.key}`)}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t(`disc.${d.key}Desc`)}</p>
                 </div>
               );
             })}
           </div>
         </section>
 
-        {/* Series */}
         <section className="mt-12">
-          <h2 className="font-serif text-2xl font-semibold">Series &amp; Collections</h2>
+          <h2 className="font-serif text-2xl font-semibold">{t("pub.seriesTitle")}</h2>
           <div className="mt-5 space-y-3">
-            {SERIES.map((s) => (
+            {series.map((s) => (
               <div
                 key={s.code}
                 className="flex items-start gap-4 rounded-lg border border-border bg-card p-5"
@@ -127,28 +119,28 @@ function PublicationsPage() {
                   {s.code}
                 </div>
                 <div>
-                  <h3 className="font-serif text-base font-semibold">{s.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
+                  <h3 className="font-serif text-base font-semibold">{t(s.nameKey)}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t(s.descKey)}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Recently Published */}
         <section className="mt-12">
           <div className="mb-5 flex items-baseline justify-between">
-            <h2 className="font-serif text-2xl font-semibold">Recently Published</h2>
+            <h2 className="font-serif text-2xl font-semibold">{t("pub.recent")}</h2>
             <Link to="/library" className="text-sm text-muted-foreground hover:text-primary">
-              View all →
+              {t("pub.viewAll")}
             </Link>
           </div>
           {loading ? (
-            <p className="text-muted-foreground">Loading…</p>
+            <p className="text-muted-foreground">{t("pub.loading")}</p>
           ) : books.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-              The inaugural volumes are in preparation. See <em>Forthcoming</em> below.
-            </p>
+            <p
+              className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground"
+              dangerouslySetInnerHTML={{ __html: t("recent.empty") }}
+            />
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {books.slice(0, 6).map((b) => (
@@ -159,7 +151,7 @@ function PublicationsPage() {
                   className="group rounded-lg border border-border bg-card p-5 transition hover:border-primary hover:shadow-md"
                 >
                   <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                    Monograph · {b.language.toUpperCase()}
+                    {t("recent.kind")} · {b.language.toUpperCase()}
                   </p>
                   <h3 className="mt-2 font-serif text-lg font-semibold leading-snug group-hover:text-primary">
                     {b.title}
@@ -168,7 +160,7 @@ function PublicationsPage() {
                     <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{b.description}</p>
                   )}
                   <p className="mt-3 text-xs text-muted-foreground">
-                    Published {new Date(b.created_at).getFullYear()}
+                    {t("pub.publishedYear", { year: new Date(b.created_at).getFullYear() })}
                   </p>
                 </Link>
               ))}
@@ -176,78 +168,41 @@ function PublicationsPage() {
           )}
         </section>
 
-        {/* Forthcoming */}
         <section className="mt-12">
-          <h2 className="font-serif text-2xl font-semibold">Forthcoming</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Volumes currently in editorial preparation.
-          </p>
+          <h2 className="font-serif text-2xl font-semibold">{t("forth.title")}</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {FORTHCOMING.map((f) => (
-              <div key={f.title} className="rounded-lg border border-dashed border-border bg-card/50 p-5">
+            {forthcoming.map((f) => (
+              <div
+                key={f.titleKey}
+                className="rounded-lg border border-dashed border-border bg-card/50 p-5"
+              >
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>{f.expected}</span>
+                  <span>
+                    {t("forth.label")} {f.year}
+                  </span>
                   <span>·</span>
                   <span>{f.series}</span>
                 </div>
-                <h3 className="mt-2 font-serif text-base font-semibold">{f.title}</h3>
-                <p className="mt-1 text-sm italic text-muted-foreground">{f.author}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
+                <h3 className="mt-2 font-serif text-base font-semibold">{t(f.titleKey)}</h3>
+                <p className="mt-1 text-sm italic text-muted-foreground">{t("forth.author")}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Editorial note */}
         <section className="mt-12 rounded-lg border border-border bg-card p-6">
-          <h2 className="font-serif text-lg font-semibold">A Note on the Catalogue</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            The Institute is an independent academic publisher. All volumes are issued for
-            scholarly study and critical engagement. Where appropriate, future volumes will
-            carry ISBN and DOI identifiers in accordance with standard academic publishing
-            practice.
-          </p>
+          <h2 className="font-serif text-lg font-semibold">{t("pub.noteTitle")}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("pub.noteBody")}</p>
         </section>
       </main>
 
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Institute for Providence Theology · 섭리신학연구소
+        © {new Date().getFullYear()} {t("inst.nameEn")} · {t("inst.name")}
       </footer>
     </div>
   );
 }
-
-const FORTHCOMING = [
-  {
-    title: "On Providence: A Systematic Re-examination",
-    author: "Editorial Collective, IPT",
-    series: "SIP 01",
-    expected: "Forthcoming 2026",
-    desc: "A long-form study of the doctrine of providence in modern systematic theology.",
-  },
-  {
-    title: "Reading the Tradition: Essays in Philosophical Theology",
-    author: "Editorial Collective, IPT",
-    series: "EPT 01",
-    expected: "Forthcoming 2026",
-    desc: "Collected essays at the intersection of analytic philosophy and theological reasoning.",
-  },
-  {
-    title: "Critical Edition: Selected Sermons",
-    author: "Editorial Collective, IPT",
-    series: "TC 01",
-    expected: "Forthcoming 2026",
-    desc: "Annotated edition with historical and theological commentary.",
-  },
-  {
-    title: "Comparative Studies in Religious Experience",
-    author: "Editorial Collective, IPT",
-    series: "SIP 02",
-    expected: "Forthcoming 2027",
-    desc: "Cross-tradition study of mystical and religious experience in modern thought.",
-  },
-];
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
