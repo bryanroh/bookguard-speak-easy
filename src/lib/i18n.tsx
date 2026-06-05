@@ -23,6 +23,8 @@ const dict: Record<Lang, Dict> = {
     "nav.signIn": "로그인",
     "nav.language": "언어",
     "nav.about": "소개",
+    "nav.publications": "출판물",
+    "nav.editorial": "편집위원회",
 
     "home.subtitle": "회원 전용 디지털 도서관에 오신 것을 환영합니다.",
     "home.enterLibrary": "도서관 입장",
@@ -84,6 +86,8 @@ const dict: Record<Lang, Dict> = {
     "nav.signIn": "Sign in",
     "nav.language": "Language",
     "nav.about": "About",
+    "nav.publications": "Publications",
+    "nav.editorial": "Editorial Board",
 
     "home.subtitle": "Welcome to the members-only digital library.",
     "home.enterLibrary": "Enter Library",
@@ -145,6 +149,8 @@ const dict: Record<Lang, Dict> = {
     "nav.signIn": "ログイン",
     "nav.language": "言語",
     "nav.about": "紹介",
+    "nav.publications": "出版物",
+    "nav.editorial": "編集委員会",
 
     "home.subtitle": "会員専用デジタル図書館へようこそ。",
     "home.enterLibrary": "図書館へ",
@@ -206,6 +212,8 @@ const dict: Record<Lang, Dict> = {
     "nav.signIn": "登录",
     "nav.language": "语言",
     "nav.about": "关于",
+    "nav.publications": "出版物",
+    "nav.editorial": "编委会",
 
     "home.subtitle": "欢迎来到会员专属数字图书馆。",
     "home.enterLibrary": "进入图书馆",
@@ -267,6 +275,8 @@ const dict: Record<Lang, Dict> = {
     "nav.signIn": "Iniciar sesión",
     "nav.language": "Idioma",
     "nav.about": "Acerca",
+    "nav.publications": "Publicaciones",
+    "nav.editorial": "Comité Editorial",
 
     "home.subtitle": "Bienvenido a la biblioteca digital exclusiva para miembros.",
     "home.enterLibrary": "Entrar a la biblioteca",
@@ -328,6 +338,8 @@ const dict: Record<Lang, Dict> = {
     "nav.signIn": "Connexion",
     "nav.language": "Langue",
     "nav.about": "À propos",
+    "nav.publications": "Publications",
+    "nav.editorial": "Comité éditorial",
 
     "home.subtitle": "Bienvenue dans la bibliothèque numérique réservée aux membres.",
     "home.enterLibrary": "Entrer dans la bibliothèque",
