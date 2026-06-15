@@ -145,3 +145,28 @@ function ReaderPage() {
     </div>
   );
 }
+
+function CamStatusBadge({ status, label }: { status: string; label: string | null }) {
+  if (status === "active") {
+    return (
+      <span className="hidden items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-600 sm:inline-flex" title="촬영 기기 감지 보호 작동 중">
+        <ShieldCheck className="h-3 w-3" />보호 작동중
+      </span>
+    );
+  }
+  if (status === "blocked") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-red-500/50 bg-red-500/10 px-2 py-0.5 text-[11px] text-red-600">
+        <ShieldAlert className="h-3 w-3" />{label ?? "촬영 기기"} 감지
+      </span>
+    );
+  }
+  if (status === "denied" || status === "unsupported") {
+    return (
+      <span className="hidden items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600 sm:inline-flex" title="카메라 권한이 없어 촬영 기기 감지가 비활성화됨">
+        <ShieldOff className="h-3 w-3" />보호 비활성
+      </span>
+    );
+  }
+  return null;
+}
