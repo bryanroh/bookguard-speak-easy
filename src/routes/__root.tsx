@@ -11,6 +11,9 @@ import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { I18nProvider } from "@/lib/i18n";
+import { useSessionGuard, setLocalSessionToken, getLocalSessionToken, clearLocalSessionToken } from "@/hooks/use-session-guard";
+import { registerSession } from "@/lib/session.functions";
+import { getDeviceFingerprint } from "@/lib/device-fingerprint";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
