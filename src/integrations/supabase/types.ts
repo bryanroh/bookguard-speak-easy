@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_sessions: {
+        Row: {
+          created_at: string
+          device_fingerprint: string
+          ip: string | null
+          last_seen: string
+          session_token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint: string
+          ip?: string | null
+          last_seen?: string
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint?: string
+          ip?: string | null
+          last_seen?: string
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       bookmarks: {
         Row: {
           created_at: string
@@ -158,6 +188,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ip_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       pages: {
         Row: {
