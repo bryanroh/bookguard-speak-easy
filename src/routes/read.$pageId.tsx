@@ -9,13 +9,23 @@ import { TTSControls } from "@/components/TTSControls";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useReaderProtection } from "@/hooks/use-reader-protection";
 import { useCameraDetection } from "@/hooks/use-camera-detection";
+import { CameraGate } from "@/components/CameraGate";
+import { CanvasReader } from "@/components/CanvasReader";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/read/$pageId")({
   head: () => ({ meta: [{ title: "읽기 — 섭리 웹북" }, { name: "robots", content: "noindex,nofollow" }] }),
-  component: ReaderPage,
+  component: ReaderPageGated,
 });
+
+function ReaderPageGated() {
+  return (
+    <CameraGate>
+      <ReaderPage />
+    </CameraGate>
+  );
+}
 
 type PageDetail = {
   id: string; chapter_id: string; page_number: number; content_html: string;
