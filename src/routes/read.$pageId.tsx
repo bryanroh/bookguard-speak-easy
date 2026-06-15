@@ -9,13 +9,23 @@ import { TTSControls } from "@/components/TTSControls";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useReaderProtection } from "@/hooks/use-reader-protection";
 import { useCameraDetection } from "@/hooks/use-camera-detection";
+import { CameraGate } from "@/components/CameraGate";
+import { CanvasReader } from "@/components/CanvasReader";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/read/$pageId")({
   head: () => ({ meta: [{ title: "읽기 — 섭리 웹북" }, { name: "robots", content: "noindex,nofollow" }] }),
-  component: ReaderPage,
+  component: ReaderPageGated,
 });
+
+function ReaderPageGated() {
+  return (
+    <CameraGate>
+      <ReaderPage />
+    </CameraGate>
+  );
+}
 
 type PageDetail = {
   id: string; chapter_id: string; page_number: number; content_html: string;
@@ -89,19 +99,10 @@ function ReaderPage() {
     if (error) toast.error(error.message); else toast.success(t("read.bookmarkSaved"));
   };
 
-  // Sentence-highlighted HTML
-  const highlightedHtml = useMemo(() => {
-    if (!page) return "";
-    if (typeof document === "undefined" || activeSentence < 0) return page.content_html;
-    const div = document.createElement("div");
-    div.innerHTML = page.content_html;
-    const text = div.textContent || "";
-    const sentences = text.split(/(?<=[.!?。！？\n])\s+/).map((s) => s.trim()).filter(Boolean);
-    if (activeSentence >= sentences.length) return page.content_html;
-    const target = sentences[activeSentence];
-    const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return page.content_html.replace(new RegExp(escaped, "i"), `<mark class="tts-active">${target}</mark>`);
-  }, [page, activeSentence]);
+  // Note: visual sentence highlighting is removed in canvas mode (text is now
+  // rendered as pixels). TTS playback itself still works via TTSControls.
+  // activeSentence is kept in scope to avoid breaking the TTSControls prop.
+  void activeSentence;
 
   if (!page) return <div className="min-h-screen bg-background p-8 text-center">{t("read.loading")}</div>;
 
@@ -128,11 +129,9 @@ function ReaderPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-10">
-        <article
-          className="reader-content imported-html prose-book no-select"
-          // Protected content
-          dangerouslySetInnerHTML={{ __html: highlightedHtml }}
-        />
+        <div className="reader-content no-select text-foreground">
+          <CanvasReader html={page.content_html} />
+        </div>
         <div className="mt-12 flex items-center justify-between">
           {prev ? (
             <Link to="/read/$pageId" params={{ pageId: prev.id }}><Button variant="outline"><ChevronLeft className="mr-1 h-4 w-4" />{t("read.prev")}</Button></Link>

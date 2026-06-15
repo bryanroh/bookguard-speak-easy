@@ -11,6 +11,9 @@ import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { I18nProvider } from "@/lib/i18n";
+import { useSessionGuard, setLocalSessionToken, getLocalSessionToken, clearLocalSessionToken } from "@/hooks/use-session-guard";
+import { registerSession } from "@/lib/session.functions";
+import { getDeviceFingerprint } from "@/lib/device-fingerprint";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -90,19 +93,40 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const router = useRouter();
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      router.invalidate();
-    });
-    return () => subscription.unsubscribe();
-  }, [router]);
   return (
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
+        <SessionManager />
         <Outlet />
         <Toaster richColors position="top-center" />
       </I18nProvider>
     </QueryClientProvider>
   );
+}
+
+function SessionManager() {
+  const router = useRouter();
+  useSessionGuard();
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      router.invalidate();
+      if (event === "SIGNED_IN" && session?.user) {
+        // Only register once per fresh sign-in (not on token refresh)
+        if (!getLocalSessionToken()) {
+          try {
+            const fingerprint = await getDeviceFingerprint();
+            const res = await registerSession({ data: { fingerprint } });
+            setLocalSessionToken(res.sessionToken);
+          } catch (e) {
+            console.warn("[session] register failed", e);
+          }
+        }
+      }
+      if (event === "SIGNED_OUT") {
+        clearLocalSessionToken();
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [router]);
+  return null;
 }
