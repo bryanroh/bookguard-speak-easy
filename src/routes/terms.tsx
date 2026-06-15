@@ -86,14 +86,38 @@ function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold">제8조 (책임의 제한)</h2>
+          <h2 className="text-lg font-semibold">제8조 (보안 및 무단 사용 금지)</h2>
+          <p>
+            이용자는 다음 행위를 일체 하지 않을 의무를 부담합니다. 위반 시 회사는 즉시 계정을 정지하고
+            <strong> 징벌적 손해배상</strong>을 청구할 수 있습니다.
+          </p>
+          <ul className="ml-5 mt-2 list-disc space-y-1">
+            <li>화면 캡처(스크린샷, OS 캡처 도구), 화면 녹화, 외부기기(휴대폰·카메라 등) 촬영</li>
+            <li>인쇄, PDF·이미지 추출, 텍스트 복사 및 그 우회 시도</li>
+            <li>계정 공유 또는 양도 (1계정 1인 사용 원칙)</li>
+            <li>봇, 크롤러, 자동화 스크립트, 스크래핑 도구 등을 통한 자동 접근</li>
+            <li>본 서비스의 보안 메커니즘(촬영 감지, 디바이스 핑거프린트, 세션 검증 등) 우회·무력화</li>
+            <li>유출된 콘텐츠의 재배포·공유·게시</li>
+          </ul>
+          <p className="mt-3">
+            <strong>손해배상액</strong>은 위반 사실 발생 시 콘텐츠 정가의 <strong>최소 100배 또는 1천만원 중 큰 금액</strong>으로
+            정합니다. 이는 저작권법상의 손해배상과 별개이며, 형사 고소(저작권법 제136조 등) 및 부정경쟁방지법상의
+            청구권에도 영향을 미치지 않습니다.
+          </p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            본 조항은 회사가 제공하는 학술 저작물의 가치를 보호하고, 정당한 이용자의 권익을 지키기 위한 것입니다.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold">제9조 (책임의 제한)</h2>
           <p>
             서비스는 "있는 그대로(as is)" 제공되며, 법령이 허용하는 최대한도 내에서 회사는 묵시적 보증을 부인합니다.
           </p>
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold">제9조 (준거법 및 관할)</h2>
+          <h2 className="text-lg font-semibold">제10조 (준거법 및 관할)</h2>
           <p>
             본 약관은 대한민국 법률에 따르며, 분쟁 발생 시 민사소송법상 관할 법원에 소를 제기합니다.
           </p>
