@@ -9,8 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PublicationsRouteImport } from './routes/publications'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as EditorialBoardRouteImport } from './routes/editorial-board'
@@ -23,14 +26,29 @@ import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminEditPageIdRouteImport } from './routes/admin.edit.$pageId'
 import { Route as AdminBookBookIdRouteImport } from './routes/admin.book.$bookId'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RefundRoute = RefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublicationsRoute = PublicationsRouteImport.update({
   id: '/publications',
   path: '/publications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -96,8 +114,11 @@ export interface FileRoutesByFullPath {
   '/editorial-board': typeof EditorialBoardRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/publications': typeof PublicationsRoute
+  '/refund': typeof RefundRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/read/$pageId': typeof ReadPageIdRoute
@@ -111,8 +132,11 @@ export interface FileRoutesByTo {
   '/editorial-board': typeof EditorialBoardRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/publications': typeof PublicationsRoute
+  '/refund': typeof RefundRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/read/$pageId': typeof ReadPageIdRoute
@@ -127,8 +151,11 @@ export interface FileRoutesById {
   '/editorial-board': typeof EditorialBoardRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/publications': typeof PublicationsRoute
+  '/refund': typeof RefundRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/read/$pageId': typeof ReadPageIdRoute
@@ -144,8 +171,11 @@ export interface FileRouteTypes {
     | '/editorial-board'
     | '/library'
     | '/login'
+    | '/privacy'
     | '/publications'
+    | '/refund'
     | '/signup'
+    | '/terms'
     | '/admin/users'
     | '/book/$bookId'
     | '/read/$pageId'
@@ -159,8 +189,11 @@ export interface FileRouteTypes {
     | '/editorial-board'
     | '/library'
     | '/login'
+    | '/privacy'
     | '/publications'
+    | '/refund'
     | '/signup'
+    | '/terms'
     | '/admin/users'
     | '/book/$bookId'
     | '/read/$pageId'
@@ -174,8 +207,11 @@ export interface FileRouteTypes {
     | '/editorial-board'
     | '/library'
     | '/login'
+    | '/privacy'
     | '/publications'
+    | '/refund'
     | '/signup'
+    | '/terms'
     | '/admin/users'
     | '/book/$bookId'
     | '/read/$pageId'
@@ -190,14 +226,24 @@ export interface RootRouteChildren {
   EditorialBoardRoute: typeof EditorialBoardRoute
   LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
   PublicationsRoute: typeof PublicationsRoute
+  RefundRoute: typeof RefundRoute
   SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
   BookBookIdRoute: typeof BookBookIdRoute
   ReadPageIdRoute: typeof ReadPageIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -205,11 +251,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/refund': {
+      id: '/refund'
+      path: '/refund'
+      fullPath: '/refund'
+      preLoaderRoute: typeof RefundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/publications': {
       id: '/publications'
       path: '/publications'
       fullPath: '/publications'
       preLoaderRoute: typeof PublicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -313,8 +373,11 @@ const rootRouteChildren: RootRouteChildren = {
   EditorialBoardRoute: EditorialBoardRoute,
   LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
   PublicationsRoute: PublicationsRoute,
+  RefundRoute: RefundRoute,
   SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
   BookBookIdRoute: BookBookIdRoute,
   ReadPageIdRoute: ReadPageIdRoute,
 }
