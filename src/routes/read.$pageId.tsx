@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, ShieldCheck, ShieldAlert, ShieldOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -8,6 +8,7 @@ import { Watermark } from "@/components/Watermark";
 import { TTSControls } from "@/components/TTSControls";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useReaderProtection } from "@/hooks/use-reader-protection";
+import { useCameraDetection } from "@/hooks/use-camera-detection";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 
@@ -61,6 +62,20 @@ function ReaderPage() {
     enabled: !!page,
   });
 
+  const handleForceLogout = useCallback(async () => {
+    try { window.speechSynthesis?.cancel(); } catch {}
+    await supabase.auth.signOut();
+    navigate({ to: "/login" });
+  }, [navigate]);
+
+  const { status: camStatus, detectedLabel } = useCameraDetection({
+    enabled: !!page && !!user,
+    userId: user?.id ?? null,
+    bookId: page?.chapter.book.id ?? "",
+    pageId,
+    onForceLogout: handleForceLogout,
+  });
+
   const idx = useMemo(() => siblingPages.findIndex((p) => p.id === pageId), [siblingPages, pageId]);
   const prev = idx > 0 ? siblingPages[idx - 1] : null;
   const next = idx >= 0 && idx < siblingPages.length - 1 ? siblingPages[idx + 1] : null;
@@ -102,7 +117,10 @@ function ReaderPage() {
           <div className="hidden text-xs text-muted-foreground sm:block">
             {page.chapter.title} · p.{page.page_number}
           </div>
-          <Button size="sm" variant="ghost" onClick={addBookmark}><Bookmark className="mr-1 h-4 w-4" />{t("read.bookmark")}</Button>
+          <div className="flex items-center gap-2">
+            <CamStatusBadge status={camStatus} label={detectedLabel} />
+            <Button size="sm" variant="ghost" onClick={addBookmark}><Bookmark className="mr-1 h-4 w-4" />{t("read.bookmark")}</Button>
+          </div>
         </div>
         <div className="mx-auto max-w-4xl px-4 pb-3">
           <TTSControls html={page.content_html} lang={page.chapter.book.language} onSentenceChange={setActiveSentence} />
@@ -126,4 +144,29 @@ function ReaderPage() {
       </main>
     </div>
   );
+}
+
+function CamStatusBadge({ status, label }: { status: string; label: string | null }) {
+  if (status === "active") {
+    return (
+      <span className="hidden items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-600 sm:inline-flex" title="촬영 기기 감지 보호 작동 중">
+        <ShieldCheck className="h-3 w-3" />보호 작동중
+      </span>
+    );
+  }
+  if (status === "blocked") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-red-500/50 bg-red-500/10 px-2 py-0.5 text-[11px] text-red-600">
+        <ShieldAlert className="h-3 w-3" />{label ?? "촬영 기기"} 감지
+      </span>
+    );
+  }
+  if (status === "denied" || status === "unsupported") {
+    return (
+      <span className="hidden items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600 sm:inline-flex" title="카메라 권한이 없어 촬영 기기 감지가 비활성화됨">
+        <ShieldOff className="h-3 w-3" />보호 비활성
+      </span>
+    );
+  }
+  return null;
 }
