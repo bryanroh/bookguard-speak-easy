@@ -1,148 +1,125 @@
-## 보안 강화 6종 일괄 구현 계획
+# 네이티브 앱 구현 계획 (모바일 + 데스크톱)
 
-선택해주신 모든 항목을 한 번에 처리합니다. 작업이 크므로 단계별로 명확히 나눠 설명드립니다.
+## 🔒 절대 원칙 (반드시 유지)
 
----
-
-### 1️⃣ 카메라 없는 기기 차단 (1-a)
-
-**동작:**
-- 앱 진입 시 `navigator.mediaDevices.enumerateDevices()`로 카메라 존재 여부 먼저 확인
-- 카메라 없음 → 전용 차단 페이지 표시: "본 서비스는 카메라가 있는 기기에서만 이용 가능합니다. USB 웹캠을 연결하거나 노트북/모바일로 접속해 주세요."
-- 카메라 있음 + 권한 거부 → 기존 동작 유지 (보호 비활성 배지)
-- 카메라 있음 + 권한 허용 → 정상 작동
-
-**구현 위치:** `src/hooks/use-camera-detection.ts` 상단에 device enumeration 추가, 리더 페이지(`read.$pageId.tsx`)에 차단 UI 추가.
+1. **앱 안에서는 콘텐츠 열람만** — 결제 UI/결제 처리 코드 앱에 절대 넣지 않음
+2. **구독/결제는 외부 브라우저(Safari/Chrome)에서 처리** — Apple Reader App 정책 준수
+3. **기존 Paddle 웹 결제 시스템 그대로 유지** — 변경 없음
+4. **로그인은 앱과 웹 공유** (Supabase Auth 세션) — 한 번 결제하면 앱에서 자동 인식
 
 ---
 
-### 2️⃣ 본문 Canvas 렌더링 + TTS 유지 (2-b)
+## 📦 최종 구성
 
-**핵심 요구:** TTS는 무조건 작동해야 함.
-
-**해법 (하이브리드):**
-- **시각 출력**: HTML → Canvas로 렌더링 (텍스트가 픽셀이 됨 → F12로 본문 텍스트 추출 불가)
-- **TTS 입력**: 원본 HTML 텍스트는 메모리에만 유지, DOM에는 노출 안 함 → TTS 엔진에 직접 전달
-- 사용자는 시각적으로는 동일하게 보지만, DevTools에서는 `<canvas>` 태그만 보임
-- 사용자가 "현재 페이지 TTS 재생" 버튼 누르면 평소처럼 작동
-
-**구현:**
-- 새 컴포넌트 `src/components/CanvasReader.tsx`: HTML 문자열 받아 canvas에 렌더링
-- 기존 `TTSControls`는 그대로 사용 (이미 html prop 받음)
-- `read.$pageId.tsx`에서 `dangerouslySetInnerHTML` → `<CanvasReader html={...} />` 교체
-- 워터마크는 canvas 위에 그대로 오버레이
-
-**트레이드오프 안내:**
-- 텍스트 선택/복사 자체가 불가능해짐 (이미 차단되어 있어 영향 없음)
-- 줌/리사이즈 시 재렌더링 필요 (해상도 대응)
-- 글꼴 렌더링 품질은 브라우저 기본 텍스트보다 약간 차이 있을 수 있음 → high-DPI 보정으로 최소화
+| 플랫폼 | 기술 | 역할 |
+|---|---|---|
+| **iOS / Android** | React Native (Expo bare workflow) + 네이티브 모듈 | 콘텐츠 열람 + 강력한 캡처 차단 |
+| **Windows / macOS / Linux** | 기존 Electron 유지 (`electron/main.cjs`) | 데스크톱 열람 + `setContentProtection` |
+| **웹 (모든 결제, 관리자)** | 기존 TanStack Start + Paddle 그대로 | 가입 / 결제 / 구독 관리 / 관리자 |
 
 ---
 
-### 3️⃣ 1계정 1세션 강제 (3-C-1)
+## 🗺️ 단계별 진행 계획
 
-**동작:**
-- 로그인 성공 시 새로운 `session_token` 발급 후 DB(`active_sessions` 테이블)에 저장
-- 다른 기기에서 새 로그인 → 기존 세션 토큰 무효화
-- 기존 기기에서 액션 시 → "다른 기기에서 로그인되어 자동 로그아웃됩니다" → 강제 로그아웃
+### **0단계: 사전 정리 (현재 세션)**
+- 이 계획서 승인
+- `mem://` 에 핵심 원칙 영구 저장 (다음 세션에서도 잊지 않도록)
+- 모노레포 구조 결정: `apps/web` (현재), `apps/mobile` (신규), `apps/desktop` (electron 이동)
 
-**구현:**
-- 신규 테이블 `active_sessions` (user_id, session_token, device_fingerprint, ip, last_seen)
-- 신규 서버 함수 `register-session.functions.ts` (로그인 직후 호출)
-- 신규 서버 함수 `verify-session.functions.ts` (15초마다 폴링)
-- 폴링 클라이언트 훅 `use-session-guard.ts` → `__root.tsx`에 마운트
+### **1단계: 결제 분리 검증 (웹만 작업)**
+- 현재 웹의 결제 페이지를 **모바일 친화 외부 페이지**로 정비
+  - 모바일 브라우저에서 열렸을 때 깔끔하게 보이도록 반응형 점검
+  - 결제 완료 → `proweb://payment-success?token=...` 같은 **딥링크로 앱 복귀** 처리
+- Supabase Auth 세션 토큰을 딥링크로 안전하게 전달하는 방식 설계
+- 산출물: `payment/start`, `payment/success`, `payment/cancel` 페이지
 
----
+### **2단계: React Native 프로젝트 생성**
+- `apps/mobile/` 에 Expo bare workflow로 생성 (네이티브 모듈을 자유롭게 쓰기 위해)
+- 공유 코드(타입, Supabase 클라이언트, i18n) → `packages/shared`
+- iOS/Android 양쪽 빌드 환경 구축
+- 산출물: 빈 셸 앱이 빌드되고 시뮬레이터에서 실행됨
 
-### 4️⃣ IP 로그 기록 (4-D-3)
+### **3단계: 로그인 & 콘텐츠 열람 기본 구현**
+- Supabase Auth (이메일 + Google) 동일 적용 → 웹과 세션 호환
+- 도서 목록 / 도서 상세 / 페이지 리더 화면 3개
+- 콘텐츠는 React Native WebView로 렌더링 (보안 옵션 최대)
+- 산출물: 앱에서 로그인 후 콘텐츠를 읽을 수 있음
 
-**동작:**
-- 차단 없이 단순 기록만 (가장 안전)
-- 로그인/세션 등록/캡처 이벤트 시 서버에서 IP 자동 기록
-- 운영자가 관리자 페이지에서 이상 패턴 확인 가능
+### **4단계: 외부 브라우저 결제 플로우 연결** ⭐ 핵심
+- 앱 내 "구독하기" 버튼 → `expo-web-browser` 또는 `SFSafariViewController` / `Custom Tabs`로 결제 페이지 오픈
+- 결제 완료 → 딥링크(`proweb://`)로 앱 자동 복귀
+- 앱이 Supabase에서 구독 상태 재조회 → 콘텐츠 잠금 해제
+- **앱 내부에는 결제 코드/Paddle SDK 0줄** — Apple 심사 통과의 핵심
+- 산출물: 앱에서 시작 → 외부 결제 → 앱 복귀 → 구독 활성화 완료
 
-**구현:**
-- `active_sessions.ip` 컬럼 활용
-- 신규 테이블 `ip_log` (user_id, ip, country, user_agent, action, created_at)
-- 관리자 페이지 `admin.users.tsx`에 사용자별 IP 이력 보기 추가
+### **5단계: OS 레벨 캡처 차단 (네이티브 모듈)**
+- **Android**: `FLAG_SECURE` 적용 → 스크린샷·녹화 완전 차단 (커널 레벨)
+- **iOS**:
+  - `UIScreen.isCaptured` 감지 → 화면 검정 처리
+  - `UIScreen.capturedDidChangeNotification` 녹화 감지
+  - 스크린샷 시 `UIApplicationUserDidTakeScreenshotNotification` → 경고 + 로그
+- **외부 디스플레이/미러링 감지**: AirPlay/HDMI 연결 시 콘텐츠 숨김
+- 산출물: 스크린샷·녹화 시도 시 OS 레벨에서 차단됨
 
----
+### **6단계: AI 카메라 감지 (외부 촬영 차단)**
+- iOS: **Vision Framework** (네이티브 Swift)
+- Android: **ML Kit Object Detection** (네이티브 Kotlin)
+- 감지 대상: 휴대폰, 카메라, DSLR, 태블릿
+- 전면 카메라로 0.5초마다 1프레임 분석 → 의심 시 화면 블러 + 로그아웃
+- 산출물: 다른 폰으로 화면 촬영 시 즉시 차단
 
-### 5️⃣ 법적 약관 추가 (5)
+### **7단계: 렌즈 글린트 감지 (고급)**
+- OpenCV iOS/Android → HoughCircles로 렌즈 원형 반사 감지
+- 안경/시계 오탐 최소화 위해 6단계 AI와 교차 검증
+- 산출물: 렌즈 자체를 감지 (감추기 어려움)
 
-**문구 (이미 합의된 내용):**
-- 무단 화면 캡처 금지 (스크린샷, 화면 녹화 포함)
-- 인쇄/PDF 추출 금지
-- 계정 공유 금지 (1계정 1인 사용)
-- 자동화 도구 사용 금지 (봇, 크롤러, 스크래핑)
-- 위반 시 즉시 계정 정지 및 **징벌적 손해배상** 청구 가능
-- 손해배상액: 콘텐츠 정가의 최소 100배 또는 1천만원 중 큰 금액
+### **8단계: 추가 보안**
+- 루팅/탈옥 감지 (iOS: `DTTJailbreakDetection` / Android: `Play Integrity API`) → 차단
+- 디바이스 핑거프린트 (기존 웹 시스템과 통합) — 한 계정 한 기기 강제
+- 워터마크 (이메일 + 시간) WebView 오버레이
 
-**구현:** `src/routes/terms.tsx`에 "제8조 보안 및 무단 사용 금지" 섹션 추가.
+### **9단계: 데스크톱 (Electron) 보안 강화**
+- 이미 존재하는 `electron/main.cjs` 에:
+  - `win.setContentProtection(true)` → Windows/Mac 스크린샷 차단
+  - 외부 디스플레이 감지 → 콘텐츠 숨김
+- 산출물: Windows 11 / macOS에서 캡처 차단되는 데스크톱 앱
 
----
-
-### 6️⃣ 디바이스 핑거프린팅 (6-J-3)
-
-**동작:**
-- 브라우저 핑거프린트(User-Agent + 화면해상도 + 언어 + 타임존 + Canvas 핑거프린트) 생성
-- 세션 등록 시 핑거프린트 저장
-- 매 요청 시 핑거프린트 검증 → 불일치 시 강제 로그아웃
-- 링크를 다른 디바이스에 공유해도 즉시 무력화
-
-**구현:**
-- `src/lib/device-fingerprint.ts` 신규 (외부 라이브러리 없이 자체 구현)
-- `active_sessions.device_fingerprint`에 저장
-- `verify-session` 서버 함수에서 fingerprint 일치 여부 함께 검증
-
----
-
-### 📋 데이터베이스 마이그레이션
-
-```sql
--- active_sessions: 1계정 1세션 + 핑거프린트
-CREATE TABLE public.active_sessions (
-  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  session_token text NOT NULL UNIQUE,
-  device_fingerprint text NOT NULL,
-  ip text,
-  user_agent text,
-  last_seen timestamptz NOT NULL DEFAULT now(),
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-
--- ip_log: 접속 IP 이력 (관리자 분석용)
-CREATE TABLE public.ip_log (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
-  ip text NOT NULL,
-  user_agent text,
-  action text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-```
-
-RLS 적용: 본인 데이터만 조회 가능, 관리자는 전체 조회.
+### **10단계: 스토어 출시**
+- Apple App Store: Reader App 신고 (`com.apple.developer.storekit.external-purchase` 불필요, 단순히 결제 UI 없음)
+- Google Play Store: 일반 출시 (외부 결제도 2024년 이후 허용)
+- Microsoft Store: Electron 앱 등록 (선택)
 
 ---
 
-### 🎯 작업 순서
+## 🛠 기술 세부 (개발자용)
 
-1. DB 마이그레이션 (active_sessions, ip_log)
-2. 서버 함수 3종 (register-session, verify-session, log-ip)
-3. 디바이스 핑거프린트 라이브러리
-4. 세션 가드 훅 + __root.tsx 마운트
-5. 카메라 사전 검사 (use-camera-detection.ts 수정)
-6. CanvasReader 컴포넌트 + 리더 페이지 교체
-7. 약관 추가 (terms.tsx)
-8. 로그인 페이지에 세션 등록 통합
+- **React Native 0.75+ / Expo SDK 52** (bare workflow — `expo prebuild`로 ios/android 폴더 노출)
+- **상태/통신**: TanStack Query (웹과 동일 패턴 재사용)
+- **딥링크**: `proweb://` 스킴 + Universal Links (iOS) / App Links (Android)
+- **모노레포**: bun workspaces, `packages/shared` 에 Supabase 클라이언트·타입·i18n 공유
+- **CI**: EAS Build (Expo Application Services)로 클라우드 빌드 → TestFlight / Internal Testing 자동 배포
 
 ---
 
-### ⚠️ 사전 안내
+## ⏱ 예상 일정
 
-- **Canvas 렌더링**은 이미지/표가 많은 책에서는 폴백(기존 HTML)이 필요할 수 있어, 일단 텍스트 위주 페이지에 적용하고 문제 발생 시 책별 토글 추가 검토.
-- **1계정 1세션**은 사용자가 PC→모바일 이동 시 매번 재로그인 필요. 이는 의도된 동작입니다.
-- **핑거프린트**는 브라우저 업데이트나 시크릿 모드 변경 시 바뀔 수 있어, 본인도 가끔 재로그인하는 케이스 발생 가능.
+| 단계 | 작업량 |
+|---|---|
+| 0–1 (정리·결제 분리) | 1~2일 |
+| 2–4 (앱 셸 + 로그인 + 외부결제) | 1주 |
+| 5 (OS 캡처 차단) | 3일 |
+| 6–7 (AI + 렌즈 감지) | 1~2주 |
+| 8–9 (추가 보안 + Electron) | 3일 |
+| 10 (스토어 등록 심사) | 1~2주 (Apple 심사 대기 포함) |
 
-승인해 주시면 바로 진행하겠습니다.
+**전체: 약 5~7주**
+
+---
+
+## ▶️ 지금 시작할 작업 (승인 후)
+
+1. 핵심 원칙을 `mem://` 에 저장 (잊지 않도록)
+2. **1단계** 진행: 웹 결제 페이지를 모바일 브라우저에서도 깔끔히 보이도록 정비 + 딥링크 복귀 메커니즘 추가
+3. 동시에 모노레포 구조로 폴더 재배치 준비
+
+**승인해주시면 0–1단계부터 즉시 진행하겠습니다.** 단계마다 결과를 보여드리고 다음으로 넘어갈지 확인받겠습니다.
