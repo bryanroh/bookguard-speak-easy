@@ -66,10 +66,14 @@ apps/mobile/
 └── package.json
 ```
 
-## 다음 단계
+## 빌드 전 필수 체크리스트
 
-- [ ] `apps/mobile/assets/models/yolov8n.tflite` 모델 추가
-- [ ] `react-native-vision-camera` 프레임 프로세서 구현
-- [ ] 딥링크 (`proweb://auth-callback`) 처리
-- [ ] Apple Developer 계정 + Google Play 계정 등록
-- [ ] EAS 빌드 + 스토어 제출
+**👉 `BUILD_NOTES.md` 를 빌드 PC 에서 그대로 보면서 따라 하세요.**
+변수 설정, 모델 파일, Paddle Live 승인, 스토어 제출까지 전부 적혀 있습니다.
+
+요약:
+- [ ] `app.json` 의 `extra.WEB_BASE_URL` / `SUPABASE_URL` / `SUPABASE_ANON_KEY` 채우기
+- [ ] `assets/models/yolov8n.tflite` 모델 파일 추가
+- [ ] Apple Developer ($99/년) + Google Play ($25) 계정 등록
+- [ ] Paddle Live 승인 (커스텀 도메인 필수)
+- [ ] EAS 빌드 → 스토어 제출
