@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, ShieldCheck, ShieldAlert, ShieldOff } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, ShieldCheck, ShieldAlert, ShieldOff, Minus, Plus, Type } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,6 +13,16 @@ import { CameraGate } from "@/components/CameraGate";
 import { CanvasReader } from "@/components/CanvasReader";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
+
+type ReaderTheme = "sepia" | "paper" | "ink";
+const THEME_CLASS: Record<ReaderTheme, string> = {
+  sepia: "reader-sepia",
+  paper: "reader-paper",
+  ink: "reader-ink",
+};
+const FONT_MIN = 15;
+const FONT_MAX = 28;
+
 
 export const Route = createFileRoute("/read/$pageId")({
   head: () => ({ meta: [{ title: "읽기 — 섭리 웹북" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -40,6 +50,20 @@ function ReaderPage() {
   const [page, setPage] = useState<PageDetail | null>(null);
   const [siblingPages, setSiblingPages] = useState<{ id: string; page_number: number; chapter_id: string }[]>([]);
   const [activeSentence, setActiveSentence] = useState<number>(-1);
+  const [fontSize, setFontSize] = useState<number>(19);
+  const [theme, setTheme] = useState<ReaderTheme>("sepia");
+
+  // restore/persist reading preferences (client only — avoids hydration mismatch)
+  useEffect(() => {
+    const fs = Number(localStorage.getItem("reader.fontSize"));
+    if (fs >= FONT_MIN && fs <= FONT_MAX) setFontSize(fs);
+    const th = localStorage.getItem("reader.theme") as ReaderTheme | null;
+    if (th === "sepia" || th === "paper" || th === "ink") setTheme(th);
+  }, []);
+  useEffect(() => { localStorage.setItem("reader.fontSize", String(fontSize)); }, [fontSize]);
+  useEffect(() => { localStorage.setItem("reader.theme", theme); }, [theme]);
+
+
 
   useEffect(() => { if (!loading && !user) navigate({ to: "/login" }); }, [user, loading, navigate]);
 
@@ -101,49 +125,151 @@ function ReaderPage() {
 
   // Note: visual sentence highlighting is removed in canvas mode (text is now
   // rendered as pixels). TTS playback itself still works via TTSControls.
-  // activeSentence is kept in scope to avoid breaking the TTSControls prop.
   void activeSentence;
+
+  const progress = siblingPages.length > 0 && idx >= 0 ? ((idx + 1) / siblingPages.length) * 100 : 0;
+
+  // keyboard paging
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" && prev) navigate({ to: "/read/$pageId", params: { pageId: prev.id } });
+      if (e.key === "ArrowRight" && next) navigate({ to: "/read/$pageId", params: { pageId: next.id } });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [prev, next, navigate]);
 
   if (!page) return <div className="min-h-screen bg-background p-8 text-center">{t("read.loading")}</div>;
 
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className={`reader-surface relative min-h-screen ${THEME_CLASS[theme]}`}>
       <Watermark userLabel={userLabel} />
       <SiteHeader />
-      <header className="sticky top-16 z-20 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between gap-3 px-4">
-          <Link to="/book/$bookId" params={{ bookId: page.chapter.book.id }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">
-            <ArrowLeft className="h-4 w-4" />{page.chapter.book.title}
+
+      <header className="sticky top-16 z-20 border-b border-border/60 bg-[var(--reader-bg)]/90 backdrop-blur">
+        <div className="mx-auto grid max-w-4xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-2 sm:flex sm:h-14 sm:justify-between sm:py-0">
+          <Link
+            to="/book/$bookId"
+            params={{ bookId: page.chapter.book.id }}
+            className="flex min-w-0 items-center gap-1 text-sm opacity-70 hover:opacity-100"
+          >
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            <span className="truncate">{page.chapter.book.title}</span>
           </Link>
-          <div className="hidden text-xs text-muted-foreground sm:block">
+          <div className="hidden text-xs opacity-60 md:block">
             {page.chapter.title} · p.{page.page_number}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1">
             <CamStatusBadge status={camStatus} label={detectedLabel} />
-            <Button size="sm" variant="ghost" onClick={addBookmark}><Bookmark className="mr-1 h-4 w-4" />{t("read.bookmark")}</Button>
+
+            {/* font size */}
+            <div className="flex items-center rounded-full border border-border/70">
+              <button
+                type="button"
+                aria-label="글자 작게"
+                className="grid h-7 w-7 place-items-center rounded-l-full disabled:opacity-30"
+                disabled={fontSize <= FONT_MIN}
+                onClick={() => setFontSize((s) => Math.max(FONT_MIN, s - 1))}
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </button>
+              <Type className="h-3.5 w-3.5 opacity-60" />
+              <button
+                type="button"
+                aria-label="글자 크게"
+                className="grid h-7 w-7 place-items-center rounded-r-full disabled:opacity-30"
+                disabled={fontSize >= FONT_MAX}
+                onClick={() => setFontSize((s) => Math.min(FONT_MAX, s + 1))}
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* theme */}
+            <div className="hidden items-center rounded-full border border-border/70 p-0.5 sm:flex">
+              {(["sepia", "paper", "ink"] as ReaderTheme[]).map((th) => (
+                <button
+                  key={th}
+                  type="button"
+                  aria-label={th}
+                  onClick={() => setTheme(th)}
+                  className={`h-5 w-5 rounded-full border border-border/60 ${
+                    th === "sepia" ? "bg-[oklch(0.955_0.018_85)]" : th === "paper" ? "bg-white" : "bg-[oklch(0.19_0.012_70)]"
+                  } ${theme === th ? "ring-2 ring-primary ring-offset-1 ring-offset-[var(--reader-bg)]" : ""}`}
+                />
+              ))}
+            </div>
+
+            <Button size="sm" variant="ghost" onClick={addBookmark}>
+              <Bookmark className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">{t("read.bookmark")}</span>
+            </Button>
           </div>
         </div>
+
         <div className="mx-auto max-w-4xl px-4 pb-3">
           <TTSControls html={page.content_html} lang={page.chapter.book.language} onSentenceChange={setActiveSentence} />
         </div>
+
+        {/* reading progress */}
+        <div className="h-0.5 w-full bg-border/50">
+          <div className="h-full bg-primary transition-[width] duration-300" style={{ width: `${progress}%` }} />
+        </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10">
-        <div className="reader-content no-select text-foreground">
-          <CanvasReader html={page.content_html} />
+      {/* fixed side paging — position never shifts with page length */}
+      <div className="pointer-events-none fixed inset-y-0 left-0 right-0 z-30 hidden items-center justify-between px-2 lg:flex">
+        {prev ? (
+          <Link to="/read/$pageId" params={{ pageId: prev.id }} aria-label={t("read.prev")} className="pointer-events-auto">
+            <span className="grid h-12 w-12 place-items-center rounded-full border border-border/60 bg-[var(--reader-bg)]/80 shadow-sm backdrop-blur transition hover:bg-[var(--reader-bg)]">
+              <ChevronLeft className="h-5 w-5" />
+            </span>
+          </Link>
+        ) : <span />}
+        {next ? (
+          <Link to="/read/$pageId" params={{ pageId: next.id }} aria-label={t("read.next")} className="pointer-events-auto">
+            <span className="grid h-12 w-12 place-items-center rounded-full border border-border/60 bg-[var(--reader-bg)]/80 shadow-sm backdrop-blur transition hover:bg-[var(--reader-bg)]">
+              <ChevronRight className="h-5 w-5" />
+            </span>
+          </Link>
+        ) : <span />}
+      </div>
+
+      <main className="mx-auto w-full max-w-[46rem] px-6 py-12 sm:px-10 lg:px-4">
+        <div className="reader-content no-select">
+          <CanvasReader key={theme} html={page.content_html} fontSize={fontSize} lineHeight={1.85} />
         </div>
-        <div className="mt-12 flex items-center justify-between">
-          {prev ? (
-            <Link to="/read/$pageId" params={{ pageId: prev.id }}><Button variant="outline"><ChevronLeft className="mr-1 h-4 w-4" />{t("read.prev")}</Button></Link>
-          ) : <div />}
-          {next && (
-            <Link to="/read/$pageId" params={{ pageId: next.id }}><Button>{t("read.next")}<ChevronRight className="ml-1 h-4 w-4" /></Button></Link>
-          )}
-        </div>
+
+        {/* mobile / tablet paging bar (fixed at the bottom, never moves) */}
+        <div className="h-24 lg:h-6" />
       </main>
+
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-[var(--reader-bg)]/92 backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
+          {prev ? (
+            <Link to="/read/$pageId" params={{ pageId: prev.id }}>
+              <Button variant="outline" size="sm"><ChevronLeft className="mr-1 h-4 w-4" />{t("read.prev")}</Button>
+            </Link>
+          ) : <span />}
+          <span className="text-xs opacity-60">
+            {idx >= 0 ? `${idx + 1} / ${siblingPages.length}` : ""}
+          </span>
+          {next ? (
+            <Link to="/read/$pageId" params={{ pageId: next.id }}>
+              <Button size="sm">{t("read.next")}<ChevronRight className="ml-1 h-4 w-4" /></Button>
+            </Link>
+          ) : <span />}
+        </div>
+      </div>
+
+      {/* desktop page counter — fixed, out of the text column */}
+      <div className="pointer-events-none fixed bottom-4 left-1/2 z-30 hidden -translate-x-1/2 rounded-full border border-border/60 bg-[var(--reader-bg)]/85 px-3 py-1 text-xs opacity-70 backdrop-blur lg:block">
+        {idx >= 0 ? `${idx + 1} / ${siblingPages.length}` : ""}
+      </div>
     </div>
   );
 }
+
 
 function CamStatusBadge({ status, label }: { status: string; label: string | null }) {
   if (status === "active") {

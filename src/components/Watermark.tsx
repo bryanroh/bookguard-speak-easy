@@ -8,10 +8,10 @@ function formatNow(d: Date) {
 }
 
 /**
- * Forensic watermark — diagonal tiled pattern showing the institute name,
- * the signed-in user's email, and the current timestamp. Rendered almost
- * fully transparent so it stays out of the way of reading, but camera
- * sensors and screenshots still pick it up.
+ * Forensic watermark — kept OFF the reading column. The identifying line is
+ * repeated along the page edges (top, bottom, left and right gutters) so the
+ * body text stays clean while any photo or screenshot still captures who was
+ * viewing the content and when.
  */
 export function Watermark({ userLabel }: Props) {
   const [now, setNow] = useState(() => formatNow(new Date()));
@@ -20,27 +20,32 @@ export function Watermark({ userLabel }: Props) {
     return () => clearInterval(t);
   }, []);
 
-  // userLabel from the reader is "<email> • <uid8>". Strip the uid tail so
-  // the watermark only carries the email.
   const email = (userLabel ?? "").split("•")[0]?.trim() || "guest";
-  const line = `섭리 신학연구소 / ${email} / ${now} / 웹북 콘텐츠는 섭리 신학연구소`;
+  const line = `섭리 신학연구소 / ${email} / ${now}`;
+  const strip = Array.from({ length: 6 }).map(() => line).join("   ·   ");
 
-  const tiles = Array.from({ length: 60 });
+  const edge =
+    "select-none whitespace-nowrap text-[10px] font-medium tracking-[0.22em] text-foreground/[0.12]";
 
   return (
-    <div
-      className="pointer-events-none fixed inset-0 z-40 grid grid-cols-3 gap-y-24 gap-x-10 overflow-hidden p-8"
-      aria-hidden="true"
-    >
-      {tiles.map((_, i) => (
-        <div
-          key={i}
-          className="select-none whitespace-nowrap text-[11px] font-medium tracking-[0.18em] text-foreground/[0.07]"
-          style={{ transform: "rotate(-26deg)" }}
-        >
-          {line}
-        </div>
-      ))}
+    <div className="pointer-events-none fixed inset-0 z-40 overflow-hidden" aria-hidden="true">
+      {/* top / bottom edges */}
+      <div className={`absolute inset-x-0 top-1 overflow-hidden text-center ${edge}`}>{strip}</div>
+      <div className={`absolute inset-x-0 bottom-1 overflow-hidden text-center ${edge}`}>{strip}</div>
+
+      {/* left / right gutters (vertical) */}
+      <div
+        className={`absolute left-1 top-1/2 origin-center ${edge}`}
+        style={{ transform: "translate(-50%, -50%) rotate(-90deg)" }}
+      >
+        {strip}
+      </div>
+      <div
+        className={`absolute right-1 top-1/2 origin-center ${edge}`}
+        style={{ transform: "translate(50%, -50%) rotate(90deg)" }}
+      >
+        {strip}
+      </div>
     </div>
   );
 }
