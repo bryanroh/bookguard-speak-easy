@@ -14,6 +14,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PublicationsRouteImport } from './routes/publications'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as EditorialBoardRouteImport } from './routes/editorial-board'
@@ -21,10 +22,12 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReadPageIdRouteImport } from './routes/read.$pageId'
+import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as BookBookIdRouteImport } from './routes/book.$bookId'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminEditPageIdRouteImport } from './routes/admin.edit.$pageId'
 import { Route as AdminBookBookIdRouteImport } from './routes/admin.book.$bookId'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -49,6 +52,11 @@ const PublicationsRoute = PublicationsRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -86,6 +94,11 @@ const ReadPageIdRoute = ReadPageIdRouteImport.update({
   path: '/read/$pageId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
+  id: '/checkout/success',
+  path: '/checkout/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookBookIdRoute = BookBookIdRouteImport.update({
   id: '/book/$bookId',
   path: '/book/$bookId',
@@ -106,6 +119,12 @@ const AdminBookBookIdRoute = AdminBookBookIdRouteImport.update({
   path: '/book/$bookId',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -114,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/editorial-board': typeof EditorialBoardRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/publications': typeof PublicationsRoute
   '/refund': typeof RefundRoute
@@ -121,9 +141,11 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/read/$pageId': typeof ReadPageIdRoute
   '/admin/book/$bookId': typeof AdminBookBookIdRoute
   '/admin/edit/$pageId': typeof AdminEditPageIdRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -132,6 +154,7 @@ export interface FileRoutesByTo {
   '/editorial-board': typeof EditorialBoardRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/publications': typeof PublicationsRoute
   '/refund': typeof RefundRoute
@@ -139,9 +162,11 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/read/$pageId': typeof ReadPageIdRoute
   '/admin/book/$bookId': typeof AdminBookBookIdRoute
   '/admin/edit/$pageId': typeof AdminEditPageIdRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -151,6 +176,7 @@ export interface FileRoutesById {
   '/editorial-board': typeof EditorialBoardRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/publications': typeof PublicationsRoute
   '/refund': typeof RefundRoute
@@ -158,9 +184,11 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/read/$pageId': typeof ReadPageIdRoute
   '/admin/book/$bookId': typeof AdminBookBookIdRoute
   '/admin/edit/$pageId': typeof AdminEditPageIdRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -171,6 +199,7 @@ export interface FileRouteTypes {
     | '/editorial-board'
     | '/library'
     | '/login'
+    | '/pricing'
     | '/privacy'
     | '/publications'
     | '/refund'
@@ -178,9 +207,11 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/users'
     | '/book/$bookId'
+    | '/checkout/success'
     | '/read/$pageId'
     | '/admin/book/$bookId'
     | '/admin/edit/$pageId'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -189,6 +220,7 @@ export interface FileRouteTypes {
     | '/editorial-board'
     | '/library'
     | '/login'
+    | '/pricing'
     | '/privacy'
     | '/publications'
     | '/refund'
@@ -196,9 +228,11 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/users'
     | '/book/$bookId'
+    | '/checkout/success'
     | '/read/$pageId'
     | '/admin/book/$bookId'
     | '/admin/edit/$pageId'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -207,6 +241,7 @@ export interface FileRouteTypes {
     | '/editorial-board'
     | '/library'
     | '/login'
+    | '/pricing'
     | '/privacy'
     | '/publications'
     | '/refund'
@@ -214,9 +249,11 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/users'
     | '/book/$bookId'
+    | '/checkout/success'
     | '/read/$pageId'
     | '/admin/book/$bookId'
     | '/admin/edit/$pageId'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -226,13 +263,16 @@ export interface RootRouteChildren {
   EditorialBoardRoute: typeof EditorialBoardRoute
   LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
+  PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   PublicationsRoute: typeof PublicationsRoute
   RefundRoute: typeof RefundRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
   BookBookIdRoute: typeof BookBookIdRoute
+  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   ReadPageIdRoute: typeof ReadPageIdRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -270,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -321,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReadPageIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout/success': {
+      id: '/checkout/success'
+      path: '/checkout/success'
+      fullPath: '/checkout/success'
+      preLoaderRoute: typeof CheckoutSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/book/$bookId': {
       id: '/book/$bookId'
       path: '/book/$bookId'
@@ -349,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookBookIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -373,13 +434,16 @@ const rootRouteChildren: RootRouteChildren = {
   EditorialBoardRoute: EditorialBoardRoute,
   LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
+  PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   PublicationsRoute: PublicationsRoute,
   RefundRoute: RefundRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
   BookBookIdRoute: BookBookIdRoute,
+  CheckoutSuccessRoute: CheckoutSuccessRoute,
   ReadPageIdRoute: ReadPageIdRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
