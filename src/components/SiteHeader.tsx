@@ -64,6 +64,9 @@ export function SiteHeader() {
           <Link to="/about">
             <Button variant="ghost" size="sm">{t("nav.about")}</Button>
           </Link>
+          <Link to="/pricing">
+            <Button variant="ghost" size="sm">{t("nav.pricing")}</Button>
+          </Link>
 
           {isAdmin && (
             <div className="flex items-center gap-1 rounded-md border border-primary/30 bg-primary/5 px-1 py-0.5">
@@ -134,6 +137,11 @@ export function SiteHeader() {
                 <Link to="/about" onClick={closeMenu}>
                   <Button variant="ghost" className="w-full justify-start">
                     {t("nav.about")}
+                  </Button>
+                </Link>
+                <Link to="/pricing" onClick={closeMenu}>
+                  <Button variant="ghost" className="w-full justify-start">
+                    {t("nav.pricing")}
                   </Button>
                 </Link>
 
