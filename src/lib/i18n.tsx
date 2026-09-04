@@ -450,7 +450,7 @@ const dict: Record<Lang, Dict> = {
     "pricing.f4": "いつでも解約可能・30日返金ポリシー",
     "pricing.cta": "購読する",
     "pricing.loginFirst": "購読の前にログインしてください",
-    "pricing.active": "현재 購読中です",
+    "pricing.active": "現在ご購読中です",
     "pricing.until": "利用期限",
     "pricing.mor": "決済は Merchant of Record である Paddle が安全に処理します。",
     "pricing.soon": "価格は準備中です",
