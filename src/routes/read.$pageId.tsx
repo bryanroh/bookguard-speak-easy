@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, ShieldCheck, ShieldAlert, ShieldOff } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, ShieldCheck, ShieldAlert, ShieldOff, Minus, Plus, Type } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,6 +13,16 @@ import { CameraGate } from "@/components/CameraGate";
 import { CanvasReader } from "@/components/CanvasReader";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
+
+type ReaderTheme = "sepia" | "paper" | "ink";
+const THEME_CLASS: Record<ReaderTheme, string> = {
+  sepia: "reader-sepia",
+  paper: "reader-paper",
+  ink: "reader-ink",
+};
+const FONT_MIN = 15;
+const FONT_MAX = 28;
+
 
 export const Route = createFileRoute("/read/$pageId")({
   head: () => ({ meta: [{ title: "읽기 — 섭리 웹북" }, { name: "robots", content: "noindex,nofollow" }] }),
