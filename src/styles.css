@@ -101,6 +101,13 @@
     -webkit-user-select: none;
     -webkit-touch-callout: none;
   }
+
+  /* Reader themes — sepia (default), paper (light), ink (dark) */
+  .reader-sepia { --reader-bg: oklch(0.955 0.018 85); --reader-fg: oklch(0.28 0.028 60); }
+  .reader-paper { --reader-bg: oklch(0.995 0 0); --reader-fg: oklch(0.25 0.01 60); }
+  .reader-ink   { --reader-bg: oklch(0.19 0.012 70); --reader-fg: oklch(0.9 0.012 80); }
+  .reader-surface { background-color: var(--reader-bg); color: var(--reader-fg); }
+
   .prose-book {
     font-family: var(--font-serif);
     font-size: 1.125rem;
