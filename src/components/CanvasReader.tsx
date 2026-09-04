@@ -3,15 +3,26 @@ import { useEffect, useRef } from "react";
 type Props = {
   html: string;
   className?: string;
+  /** Base body font size in CSS px (user adjustable). */
+  fontSize?: number;
+  /** Line-height multiplier (1.7 ~ 1.9 recommended for long-form reading). */
+  lineHeight?: number;
+  /** Explicit text color (theme aware). Falls back to container color. */
+  color?: string;
 };
 
 /**
  * Renders book content as canvas pixels so DevTools cannot extract the text.
  * The source HTML is parsed into block-level text segments and drawn onto
- * a canvas. The original HTML never enters the rendered DOM tree
- * (TTSControls receives the HTML via a prop in parent scope only).
+ * a canvas. The original HTML never enters the rendered DOM tree.
  */
-export function CanvasReader({ html, className }: Props) {
+export function CanvasReader({
+  html,
+  className,
+  fontSize = 19,
+  lineHeight = 1.8,
+  color,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -19,7 +30,6 @@ export function CanvasReader({ html, className }: Props) {
     if (!container) return;
     container.innerHTML = "";
 
-    // Parse HTML to block-level segments
     const parser = new DOMParser();
     const doc = parser.parseFromString(`<div>${html}</div>`, "text/html");
     const root = doc.body.firstElementChild as HTMLElement | null;
@@ -50,30 +60,44 @@ export function CanvasReader({ html, className }: Props) {
       const cssWidth = container.clientWidth || 640;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-      // Detect dark mode from CSS variable
-      const cs = getComputedStyle(document.documentElement);
-      const bg = cs.getPropertyValue("--background").trim() || "#fff";
-      const fg = cs.getPropertyValue("--foreground").trim() || "#111";
-      // CSS vars are oklch in this template; canvas needs rgb. Fallback colors:
-      const fgColor = fg.startsWith("oklch") ? "currentColor" : fg;
-      const useCurrent = fgColor === "currentColor";
+      const base = fontSize;
+      const lh = (size: number) => Math.round(size * lineHeight);
 
       const styleFor = (tag: string) => {
         switch (tag) {
-          case "h1": return { font: "700 28px 'Noto Serif KR', serif", lh: 40, bottom: 20 };
-          case "h2": return { font: "700 22px 'Noto Serif KR', serif", lh: 32, bottom: 16 };
-          case "h3": return { font: "700 18px 'Noto Serif KR', serif", lh: 26, bottom: 14 };
-          case "h4": return { font: "700 16px 'Noto Serif KR', serif", lh: 24, bottom: 12 };
-          case "blockquote": return { font: "italic 16px 'Noto Serif KR', serif", lh: 28, bottom: 14 };
-          case "li": return { font: "16px 'Noto Serif KR', serif", lh: 28, bottom: 6 };
-          default: return { font: "16px 'Noto Serif KR', serif", lh: 28, bottom: 14 };
+          case "h1": {
+            const s = Math.round(base * 1.75);
+            return { font: `700 ${s}px 'Noto Serif KR', serif`, lh: lh(s), bottom: base * 1.4 };
+          }
+          case "h2": {
+            const s = Math.round(base * 1.42);
+            return { font: `700 ${s}px 'Noto Serif KR', serif`, lh: lh(s), bottom: base * 1.2 };
+          }
+          case "h3": {
+            const s = Math.round(base * 1.2);
+            return { font: `700 ${s}px 'Noto Serif KR', serif`, lh: lh(s), bottom: base };
+          }
+          case "h4": {
+            const s = Math.round(base * 1.08);
+            return { font: `700 ${s}px 'Noto Serif KR', serif`, lh: lh(s), bottom: base * 0.9 };
+          }
+          case "blockquote":
+            return {
+              font: `italic ${base}px 'Noto Serif KR', serif`,
+              lh: lh(base),
+              bottom: base * 1.1,
+            };
+          case "li":
+            return { font: `${base}px 'Noto Serif KR', serif`, lh: lh(base), bottom: base * 0.5 };
+          default:
+            return { font: `${base}px 'Noto Serif KR', serif`, lh: lh(base), bottom: base * 1.1 };
         }
       };
 
-      const padding = 24;
+      // Generous side padding: ~8% of the column, on top of the page-level margins.
+      const padding = Math.max(20, Math.round(cssWidth * 0.06));
       const contentWidth = cssWidth - padding * 2;
 
-      // First pass: measure with an off-screen canvas
       const measure = document.createElement("canvas");
       const mctx = measure.getContext("2d")!;
       type Line = { text: string; font: string; lh: number; bottom: number; indent: number };
@@ -82,13 +106,11 @@ export function CanvasReader({ html, className }: Props) {
       for (const b of blocks) {
         const s = styleFor(b.tag);
         mctx.font = s.font;
-        const indent = b.tag === "li" ? 18 : 0;
+        const indent = b.tag === "li" ? Math.round(base * 1.1) : b.tag === "blockquote" ? Math.round(base * 1.4) : 0;
         const maxW = contentWidth - indent;
         const words = b.text.split(/(\s+)/);
-        let current = "";
         const prefix = b.tag === "li" ? "• " : "";
-        const firstLineText = prefix;
-        current = firstLineText;
+        let current = prefix;
         for (const w of words) {
           const test = current + w;
           if (mctx.measureText(test).width > maxW && current.trim().length > 0) {
@@ -105,22 +127,17 @@ export function CanvasReader({ html, className }: Props) {
 
       const totalHeight = lines.reduce((acc, l) => acc + l.lh + l.bottom, padding * 2);
 
-      // Real canvas
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(cssWidth * dpr);
       canvas.height = Math.round(totalHeight * dpr);
       canvas.style.width = `${cssWidth}px`;
       canvas.style.height = `${totalHeight}px`;
       canvas.style.display = "block";
-      // Subtle anti-screenshot hint
       canvas.setAttribute("aria-hidden", "true");
 
       const ctx = canvas.getContext("2d")!;
       ctx.scale(dpr, dpr);
-      // Background — leave transparent; container bg shows through
-      ctx.fillStyle = useCurrent
-        ? getComputedStyle(container).color || "#111"
-        : fgColor;
+      ctx.fillStyle = color || getComputedStyle(container).color || "#111";
       ctx.textBaseline = "top";
 
       let y = padding;
@@ -135,7 +152,6 @@ export function CanvasReader({ html, className }: Props) {
 
     render();
 
-    // Re-render on resize
     let raf: number | null = null;
     const onResize = () => {
       if (raf) cancelAnimationFrame(raf);
@@ -147,7 +163,7 @@ export function CanvasReader({ html, className }: Props) {
       ro.disconnect();
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [html]);
+  }, [html, fontSize, lineHeight, color]);
 
   return <div ref={containerRef} className={className} />;
 }
