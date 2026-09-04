@@ -50,6 +50,20 @@ function ReaderPage() {
   const [page, setPage] = useState<PageDetail | null>(null);
   const [siblingPages, setSiblingPages] = useState<{ id: string; page_number: number; chapter_id: string }[]>([]);
   const [activeSentence, setActiveSentence] = useState<number>(-1);
+  const [fontSize, setFontSize] = useState<number>(19);
+  const [theme, setTheme] = useState<ReaderTheme>("sepia");
+
+  // restore/persist reading preferences (client only — avoids hydration mismatch)
+  useEffect(() => {
+    const fs = Number(localStorage.getItem("reader.fontSize"));
+    if (fs >= FONT_MIN && fs <= FONT_MAX) setFontSize(fs);
+    const th = localStorage.getItem("reader.theme") as ReaderTheme | null;
+    if (th === "sepia" || th === "paper" || th === "ink") setTheme(th);
+  }, []);
+  useEffect(() => { localStorage.setItem("reader.fontSize", String(fontSize)); }, [fontSize]);
+  useEffect(() => { localStorage.setItem("reader.theme", theme); }, [theme]);
+
+
 
   useEffect(() => { if (!loading && !user) navigate({ to: "/login" }); }, [user, loading, navigate]);
 
