@@ -174,7 +174,7 @@ export function SiteHeader() {
                 <UserIcon className="h-3.5 w-3.5 shrink-0" />
                 <span className="max-w-[220px] truncate">{user.email}</span>
               </span>
-              <Button variant="outline" size="sm" className="h-9 px-3 text-sm" onClick={signOut} className="shrink-0 gap-1.5">
+              <Button variant="outline" size="sm" onClick={signOut} className="h-9 shrink-0 gap-1.5 px-3 text-sm">
                 <LogOut className="h-4 w-4" />
                 <span>{t("nav.signOut")}</span>
               </Button>
