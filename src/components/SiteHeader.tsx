@@ -50,34 +50,34 @@ export function SiteHeader() {
           <nav className="hidden shrink-0 items-center gap-1 lg:flex">
             {user && (
               <Link to="/library">
-                <Button variant="ghost" size="sm" className="gap-1.5">
+                <Button variant="ghost" size="sm" className="h-9 px-3 text-sm gap-1.5">
                   <LibrarySquare className="h-4 w-4" />
                   <span>{t("nav.library")}</span>
                 </Button>
               </Link>
             )}
             <Link to="/publications">
-              <Button variant="ghost" size="sm">{t("nav.publications")}</Button>
+              <Button variant="ghost" size="sm" className="h-9 px-3 text-sm">{t("nav.publications")}</Button>
             </Link>
             <Link to="/editorial-board">
-              <Button variant="ghost" size="sm">{t("nav.editorial")}</Button>
+              <Button variant="ghost" size="sm" className="h-9 px-3 text-sm">{t("nav.editorial")}</Button>
             </Link>
             <Link to="/about">
-              <Button variant="ghost" size="sm">{t("nav.about")}</Button>
+              <Button variant="ghost" size="sm" className="h-9 px-3 text-sm">{t("nav.about")}</Button>
             </Link>
             <Link to="/pricing">
-              <Button variant="ghost" size="sm">{t("nav.pricing")}</Button>
+              <Button variant="ghost" size="sm" className="h-9 px-3 text-sm">{t("nav.pricing")}</Button>
             </Link>
             {isAdmin && (
               <div className="ml-1 flex items-center gap-1 rounded-md border border-primary/30 bg-primary/5 px-1 py-0.5">
                 <Link to="/admin">
-                  <Button variant="ghost" size="sm" className="gap-1.5 text-primary hover:bg-primary/10">
+                  <Button variant="ghost" size="sm" className="h-9 px-3 text-sm gap-1.5 text-primary hover:bg-primary/10">
                     <Shield className="h-4 w-4" />
                     <span>{t("nav.admin")}</span>
                   </Button>
                 </Link>
                 <Link to="/admin/users">
-                  <Button variant="ghost" size="sm" className="gap-1.5 text-primary hover:bg-primary/10">
+                  <Button variant="ghost" size="sm" className="h-9 px-3 text-sm gap-1.5 text-primary hover:bg-primary/10">
                     <Users className="h-4 w-4" />
                     <span>{t("nav.users")}</span>
                   </Button>
@@ -174,14 +174,14 @@ export function SiteHeader() {
                 <UserIcon className="h-3.5 w-3.5 shrink-0" />
                 <span className="max-w-[220px] truncate">{user.email}</span>
               </span>
-              <Button variant="outline" size="sm" onClick={signOut} className="shrink-0 gap-1.5">
+              <Button variant="outline" size="sm" onClick={signOut} className="h-9 shrink-0 gap-1.5 px-3 text-sm">
                 <LogOut className="h-4 w-4" />
                 <span>{t("nav.signOut")}</span>
               </Button>
             </div>
           ) : (
             <Link to="/login">
-              <Button size="sm">{t("nav.signIn")}</Button>
+              <Button size="sm" className="h-9 px-3 text-sm">{t("nav.signIn")}</Button>
             </Link>
           )}
         </div>
